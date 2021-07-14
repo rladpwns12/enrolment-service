@@ -1,0 +1,45 @@
+api:
+
+  student:
+    create-student:
+      description: Creates a student
+      notes: |
+        # Normal response
+        Student information will save
+
+        # Expected error responses
+        1. If a student with the same student id as specified in the posted information already exists,
+          an <b>422 - Unprocessable Entity</b> error with a "duplicate key" error message will be returned
+
+    get-student:
+      description: Returns a student information of the specified student id
+      notes: |
+        # Normal response
+        If the requested student id is found the method will return student information
+
+        # Expected partial and error responses
+        If no student information is found, a <b>404 - Not Found</b> error will be returned
+
+    update-student:
+      description: Update a student
+      notes: |
+        # Normal response
+        Student information will update
+
+        # Expected error responses
+        1. If a student with the same email as specified in the posted information already exists,
+          an <b>422 - Unprocessable Entity</b> error with a "duplicate key" error message will be returned
+
+    delete-student:
+      description: Deletes a student
+      notes: |
+        # Normal response
+        Entities for student information related to the specificed studentId will be deleted.
+        The implementation of the delete method is idempotent, i.e. it can be called several times with the same response.
+        This means that a delete request of a non existing student will return <b>200 Ok</b>.
+
+
+
+
+
+

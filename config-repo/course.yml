@@ -1,0 +1,43 @@
+api:
+  course:
+    create-course:
+      description: Creates a course
+      notes: |
+        # Normal response
+        course information will save
+
+    get-course:
+      description: Returns a course information of the specified course id
+      notes: |
+        # Normal response
+        If the requested course id is found the method will return course information
+
+        # Expected partial and error responses
+        If no course information is found, a <b>404 - Not Found</b> error will be returned
+
+    get-courses:
+      description: Returns page of course information of the specified search option
+      notes: |
+        # Normal response
+        Returns page of course information that matches the requested search options
+        If no corresponding course exists, a null page will be returned.
+
+    update-course:
+      description: Update a course
+      notes: |
+        # Normal response
+        course information will update
+
+    delete-course:
+      description: Deletes a course
+      notes: |
+        # Normal response
+        Entities for course information related to the specificed courseId will be deleted.
+        The implementation of the delete method is idempotent, i.e. it can be called several times with the same response.
+        This means that a delete request of a non existing course will return <b>200 Ok</b>.
+
+
+
+
+
+
