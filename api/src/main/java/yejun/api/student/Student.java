@@ -3,7 +3,7 @@ package yejun.api.student;
 import yejun.api.common.Department;
 
 public class Student {
-    private int studentId;
+    private Integer studentId;
     private String name;
     private String email;
     private String password;
@@ -11,13 +11,13 @@ public class Student {
     private String serviceAddress;
 
     public Student() {
-        studentId = 0;
+        studentId = null;
         name = null;
         department = null;
         serviceAddress = null;
     }
 
-    public Student(int studentId, String name, String email, String password, Department department, String serviceAddress) {
+    public Student(Integer studentId, String name, String email, String password, Department department, String serviceAddress) {
         this.studentId = studentId;
         this.name = name;
         this.email = email;
@@ -26,7 +26,7 @@ public class Student {
         this.serviceAddress = serviceAddress;
     }
 
-    public int getStudentId() {
+    public Integer getStudentId() {
         return studentId;
     }
 
@@ -50,7 +50,7 @@ public class Student {
         return serviceAddress;
     }
 
-    public void setStudentId(int studentId) {
+    public void setStudentId(Integer studentId) {
         this.studentId = studentId;
     }
 

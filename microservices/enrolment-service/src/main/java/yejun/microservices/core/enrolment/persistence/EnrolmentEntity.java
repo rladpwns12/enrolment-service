@@ -10,7 +10,7 @@ import yejun.api.common.Department;
 import static java.lang.String.format;
 
 @Document(collection="enrolments")
-@CompoundIndex(name = "cors-stud-id", unique = true, def = "{'courseId' : 1, 'studentId': 1}")
+@CompoundIndex(name = "cors-stud-id", sparse = true, unique = true, def = "{'courseId' : 1, 'studentId': 1}")
 public class EnrolmentEntity {
     @Id
     private String id;
@@ -20,13 +20,13 @@ public class EnrolmentEntity {
 
     private Long courseId;
 
-    private int studentId;
+    private Integer studentId;
 
 
     public EnrolmentEntity() {
     }
 
-    public EnrolmentEntity(Long courseId, int studentId) {
+    public EnrolmentEntity(Long courseId, Integer studentId) {
         this.courseId = courseId;
         this.studentId = studentId;
     }
@@ -60,11 +60,11 @@ public class EnrolmentEntity {
         this.courseId = courseId;
     }
 
-    public int getStudentId() {
+    public Integer getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(int studentId) {
+    public void setStudentId(Integer studentId) {
         this.studentId = studentId;
     }
 

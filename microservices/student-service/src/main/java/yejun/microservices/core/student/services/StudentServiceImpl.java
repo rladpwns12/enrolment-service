@@ -60,7 +60,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Mono<Student> getStudent(HttpHeaders headers, int studentId, int delay, int faultPercent) {
+    public Mono<Student> getStudent(HttpHeaders headers, Integer studentId, int delay, int faultPercent) {
         if (studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
 
         if (delay > 0) simulateDelay(delay);
@@ -79,17 +79,20 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public Mono<Student> updateStudent(Student body) {
         int studentId = body.getStudentId();
+
         if (studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
+
         return repository.findByStudentId(studentId).switchIfEmpty(error(new NotFoundException("No student found for studentId: " + studentId)))
                 .map(e -> repository.save(mapper.updateEntity(body, e))).flatMap(e -> e).map(e -> mapper.entityToApi(e));
     }
 
     @Override
-    public Mono<Void> deleteStudent(int studentId) {
+    public Mono<Void> deleteStudent(Integer studentId) {
 
         if (studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
 
         LOG.debug("deleteStudent: tries to delete an entity with studentId: {}", studentId);
+
         return repository.findByStudentId(studentId).log(null, FINE).map(e -> repository.delete(e)).flatMap(e -> e);
     }
 

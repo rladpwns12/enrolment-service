@@ -1,28 +1,11 @@
-package yejun.microservices.core.course.persistence;
+package yejun.api.enrolment;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 import yejun.api.common.Department;
 import yejun.api.common.Semester;
 
-import static java.lang.String.format;
+public class CourseSummary {
 
-@Document(collection="courses")
-public class CourseEntity {
-    @Id
-    private String id;
-
-    @Version
-    private Integer version;
-
-    @Indexed(unique = true)
     private Long courseId;
-
-    private int year;
-    private Semester semester;
     private Department department;
     private String title;
     private String professorName;
@@ -30,14 +13,25 @@ public class CourseEntity {
     private int numberOfStudents;
     private int spare;
     private int capacity;
+    private int year;
+    private Semester semester;
 
-    public CourseEntity() {
+    public CourseSummary() {
+        courseId = null;
+        department = null;
+        title = null;
+        professorName = null;
+        credit = 0;
+        numberOfStudents = 0;
+        spare = 0;
+        capacity = 0;
+        year = 0;
+        semester = null;
     }
 
-    public CourseEntity(Long courseId, int year, Semester semester, Department department, String title, String professorName, int credit, int numberOfStudents, int spare, int capacity) {
+    public CourseSummary(Long courseId, Department department, String title, String professorName, int credit, int numberOfStudents, int spare, int capacity, int year, Semester semester
+    ) {
         this.courseId = courseId;
-        this.year = year;
-        this.semester = semester;
         this.department = department;
         this.title = title;
         this.professorName = professorName;
@@ -45,27 +39,8 @@ public class CourseEntity {
         this.numberOfStudents = numberOfStudents;
         this.spare = spare;
         this.capacity = capacity;
-    }
-
-    @Override
-    public String toString() {
-        return format("CourseEntity: %s", courseId);
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public Integer getVersion() {
-        return version;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
+        this.year = year;
+        this.semester = semester;
     }
 
     public Long getCourseId() {
@@ -124,6 +99,14 @@ public class CourseEntity {
         this.spare = spare;
     }
 
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
     public int getYear() {
         return year;
     }
@@ -140,11 +123,4 @@ public class CourseEntity {
         this.semester = semester;
     }
 
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
 }

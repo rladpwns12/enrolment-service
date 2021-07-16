@@ -1,38 +1,31 @@
 package yejun.api.common;
 
 public class ServiceAddresses {
-    private final String cmp;
-    private final String pro;
-    private final String rev;
-    private final String rec;
+    private final String enr;
+    private final String crs;
+    private final String stu;
 
     public ServiceAddresses() {
-        cmp = null;
-        pro = null;
-        rev = null;
-        rec = null;
+        enr = null;
+        crs = null;
+        stu = null;
     }
 
-    public ServiceAddresses(String compositeAddress, String productAddress, String reviewAddress, String recommendationAddress) {
-        this.cmp = compositeAddress;
-        this.pro = productAddress;
-        this.rev = reviewAddress;
-        this.rec = recommendationAddress;
+    public ServiceAddresses(String enrolmentAddress, String courseAddress, String studentAddress) {
+        this.enr = enrolmentAddress;
+        this.crs = courseAddress;
+        this.stu = studentAddress;
     }
 
-    public String getCmp() {
-        return cmp;
+    public String getEnr() {
+        return enr;
     }
 
-    public String getPro() {
-        return pro;
+    public String getCrs() {
+        return crs;
     }
 
-    public String getRev() {
-        return rev;
-    }
-
-    public String getRec() {
-        return rec;
+    public String getStu() {
+        return stu;
     }
 }

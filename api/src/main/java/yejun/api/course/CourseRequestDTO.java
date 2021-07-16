@@ -21,6 +21,15 @@ public class CourseRequestDTO {
         size = 20;
     }
 
+    public CourseRequestDTO(Type type, String keyword, int year, Semester semester, int page, int size) {
+        this.type = type;
+        this.keyword = keyword;
+        this.year = year;
+        this.semester = semester;
+        this.page = page;
+        this.size = size;
+    }
+
     public Type getType() {
         return type;
     }
@@ -69,13 +78,13 @@ public class CourseRequestDTO {
         this.size = size;
     }
 
-    public CourseRequestDTO(Type type, String keyword, int year, Semester semester, int page, int size) {
-        this.type = type;
-        this.keyword = keyword;
-        this.year = year;
-        this.semester = semester;
-        this.page = page;
-        this.size = size;
+    @Override
+    public String toString() {
+        return  "type=" + type +
+                ", keyword='" + keyword + '\'' +
+                ", year=" + year +
+                ", semester=" + semester +
+                ", page=" + page +
+                ", size=" + size;
     }
-
 }

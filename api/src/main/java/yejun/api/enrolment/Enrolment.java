@@ -1,32 +1,43 @@
 package yejun.api.enrolment;
 
 public class Enrolment {
-    private int studentId;
-    private String courseId;
+    private Integer studentId;
+    private Long courseId;
+    private String serviceAddress;
 
     public Enrolment(){
-        studentId = 0;
+        studentId = null;
         courseId = null;
+        serviceAddress = null;
     }
 
-    public Enrolment(int studentId, String courseId) {
+    public Enrolment(Integer studentId, Long courseId, String serviceAddress) {
         this.studentId = studentId;
         this.courseId = courseId;
+        this.serviceAddress = serviceAddress;
     }
 
-    public int getStudentId() {
+    public Integer getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(int studentId) {
+    public void setStudentId(Integer studentId) {
         this.studentId = studentId;
     }
 
-    public String getCourseId() {
+    public Long getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(String courseId) {
+    public void setCourseId(Long courseId) {
         this.courseId = courseId;
+    }
+
+    public String getServiceAddress() {
+        return serviceAddress;
+    }
+
+    public void setServiceAddress(String serviceAddress) {
+        this.serviceAddress = serviceAddress;
     }
 }

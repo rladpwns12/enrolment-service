@@ -4,12 +4,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import yejun.api.student.Student;
 
 @Api("REST API for course information.")
 public interface CourseService {
@@ -78,7 +76,7 @@ public interface CourseService {
             produces = "application/json")
     Flux<Course> getCourses(
             @RequestHeader HttpHeaders headers,
-            @PathVariable CourseRequestDTO courseRequestDTO,
+            CourseRequestDTO courseRequestDTO,
             @RequestParam(value = "delay", required = false, defaultValue = "0") int delay,
             @RequestParam(value = "faultPercent", required = false, defaultValue = "0") int faultPercent
     );

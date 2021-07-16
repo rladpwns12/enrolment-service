@@ -1,6 +1,7 @@
 package yejun.api.course;
 
 import yejun.api.common.Department;
+import yejun.api.common.Semester;
 
 public class Course {
     private Long courseId;
@@ -10,6 +11,9 @@ public class Course {
     private int credit;
     private int numberOfStudents;
     private int spare;
+    private int capacity;
+    private int year;
+    private Semester semester;
     private String serviceAddress;
 
     public Course() {
@@ -20,9 +24,15 @@ public class Course {
         credit = 0;
         numberOfStudents = 0;
         spare = 0;
+        capacity = 0;
+        year = 0;
+        semester = null;
+        serviceAddress = null;
     }
 
-    public Course(Long courseId, Department department, String title, String professorName, int credit, int numberOfStudents, int spare) {
+    public Course(Long courseId, Department department, String title, String professorName, int credit,
+                  int numberOfStudents, int spare, int capacity, int year, Semester semester, String serviceAddress
+    ) {
         this.courseId = courseId;
         this.department = department;
         this.title = title;
@@ -30,6 +40,10 @@ public class Course {
         this.credit = credit;
         this.numberOfStudents = numberOfStudents;
         this.spare = spare;
+        this.capacity = capacity;
+        this.year = year;
+        this.semester = semester;
+        this.serviceAddress = serviceAddress;
     }
 
     public Long getCourseId() {
@@ -86,5 +100,37 @@ public class Course {
 
     public void setSpare(int spare) {
         this.spare = spare;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public Semester getSemester() {
+        return semester;
+    }
+
+    public void setSemester(Semester semester) {
+        this.semester = semester;
+    }
+
+    public String getServiceAddress() {
+        return serviceAddress;
+    }
+
+    public void setServiceAddress(String serviceAddress) {
+        this.serviceAddress = serviceAddress;
     }
 }

@@ -51,7 +51,7 @@ public interface StudentService {
             produces = "application/json")
     Mono<Student> getStudent(
             @RequestHeader HttpHeaders headers,
-            @PathVariable int studentId,
+            @PathVariable Integer studentId,
             @RequestParam(value = "delay", required = false, defaultValue = "0") int delay,
             @RequestParam(value = "faultPercent", required = false, defaultValue = "0") int faultPercent
     );
@@ -92,5 +92,5 @@ public interface StudentService {
             @ApiResponse(code = 422, message = "Unprocessable entity, input parameters caused the processing to fail. See response message for more information.")
     })
     @DeleteMapping(value = "/student/{studentId}")
-    Mono<Void> deleteStudent(@PathVariable int studentId);
+    Mono<Void> deleteStudent(@PathVariable Integer studentId);
 }

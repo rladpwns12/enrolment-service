@@ -17,7 +17,7 @@ public class StudentEntity {
     private Integer version;
 
     @Indexed(unique = true)
-    private int studentId;
+    private Integer studentId;
 
     private String email;
     private String name;
@@ -27,7 +27,7 @@ public class StudentEntity {
     public StudentEntity() {
     }
 
-    public StudentEntity(int studentId, String name, String email, String password, Department department) {
+    public StudentEntity(Integer studentId, String name, String email, String password, Department department) {
         this.studentId = studentId;
         this.name = name;
         this.email = email;
@@ -56,11 +56,11 @@ public class StudentEntity {
         this.version = version;
     }
 
-    public int getStudentId() {
+    public Integer getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(int studentId) {
+    public void setStudentId(Integer studentId) {
         this.studentId = studentId;
     }
 

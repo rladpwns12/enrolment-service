@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import yejun.api.course.Course;
 
@@ -34,10 +33,33 @@ public interface EnrolmentService {
     Mono<Enrolment> createEnrolment(@RequestBody Long courseId);
 
     /**
-     * Sample usage: curl -X GET $HOST:$PORT/enrolment?studentId=20142058&year=2021&semester=FALL&page=0&size=20
+     * Sample usage: curl $HOST:$PORT/enrolment/2150685201
+     *
+     * @param courseId
+     * @return The information of the student who registered for the course will be returned, if found, else null page
+     */
+    @ApiOperation(
+            value = "${api.enrolment.get-enrolment.description}",
+            notes = "${api.enrolment.get-enrolment.notes}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 400, message = "Bad Request, invalid format of the request. See response message for more information."),
+            @ApiResponse(code = 422, message = "Unprocessable entity, input parameters caused the processing to fail. See response message for more information.")
+    })
+    @GetMapping(
+            value    = "/enrolment/{courseId}",
+            produces = "application/json")
+    Mono<EnrolmentByCourse> getEnrolmentByCourse(
+            @RequestHeader HttpHeaders headers,
+            @PathVariable Long courseId,
+            @RequestParam(value = "delay", required = false, defaultValue = "0") int delay,
+            @RequestParam(value = "faultPercent", required = false, defaultValue = "0") int faultPercent
+    );
+
+    /**
+     * Sample usage: curl -X GET $HOST:$PORT/enrolment?studentId=20142058&year=2021&semester=FALL
      * -H "accept: * / *"
      *
-     * @param enrolmentRequestDTO
+     * @param enrolmentStudentDTO
      * @return the enrolment info, if found, else null page
      */
     @ApiOperation(
@@ -50,9 +72,9 @@ public interface EnrolmentService {
     @GetMapping(
             value    = "/enrolment",
             produces = "application/json")
-    Flux<Course> getEnrolment(
+    Mono<EnrolmentByStudent> getEnrolmentByStudent(
             @RequestHeader HttpHeaders headers,
-            @PathVariable EnrolmentRequestDTO enrolmentRequestDTO,
+            EnrolmentStudentDTO enrolmentStudentDTO,
             @RequestParam(value = "delay", required = false, defaultValue = "0") int delay,
             @RequestParam(value = "faultPercent", required = false, defaultValue = "0") int faultPercent
     );
