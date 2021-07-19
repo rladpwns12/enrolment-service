@@ -3,18 +3,22 @@ package yejun.microservices.core.course.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import yejun.api.common.MessageSources;
 import yejun.api.common.Semester;
 import yejun.api.common.Type;
 import yejun.api.course.Course;
 import yejun.api.course.CourseRequestDTO;
 import yejun.api.course.CourseService;
+import yejun.api.event.Event;
 import yejun.microservices.core.course.persistence.CourseEntity;
 import yejun.microservices.core.course.persistence.CourseRepository;
 import yejun.util.exceptions.InvalidInputException;
@@ -28,6 +32,7 @@ import static reactor.core.publisher.Mono.error;
 
 
 @RestController
+@EnableBinding(MessageSources.class)
 public class CourseServiceImpl implements CourseService {
 
     private final ServiceUtil serviceUtil;
@@ -36,13 +41,16 @@ public class CourseServiceImpl implements CourseService {
 
     private final CourseMapper mapper;
 
+    private final MessageSources messageSources;
+
     private static final Logger LOG = LoggerFactory.getLogger(CourseServiceImpl.class);
 
     @Autowired
-    public CourseServiceImpl(ServiceUtil serviceUtil, CourseRepository repository, CourseMapper mapper) {
+    public CourseServiceImpl(ServiceUtil serviceUtil, CourseRepository repository, CourseMapper mapper, MessageSources messageSources) {
         this.serviceUtil = serviceUtil;
         this.repository = repository;
         this.mapper = mapper;
+        this.messageSources = messageSources;
     }
 
 
@@ -63,7 +71,7 @@ public class CourseServiceImpl implements CourseService {
                         ex -> new InvalidInputException("Duplicate key, Course Id: " + body.getCourseId()))
                 .map(mapper::entityToApi);
 
-        //TODO capacity 수 만큼 Enrolment record 생성 event 메세지 처리 로직 추가 필요
+        messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event(Event.Type.CREATE, body.getCourseId(), body)).build());
 
         return newEntity;
     }
@@ -139,8 +147,10 @@ public class CourseServiceImpl implements CourseService {
                     }
                 }).flatMap(e -> e).map(mapper::entityToApi);
 
-        //TODO updateCapacity 수 만큼 Enrolment record 생성 event 메세지 처리 로직 추가 필요
-
+        if (updateCapacity[0] > 0) {
+            body.setCapacity(updateCapacity[0]);
+            messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event(Event.Type.CREATE, body.getCourseId(), body)).build());
+        }
         return updateEntity;
     }
 

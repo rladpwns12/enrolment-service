@@ -6,7 +6,10 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Api("REST API for student information.")
 public interface StudentService {
@@ -55,6 +58,8 @@ public interface StudentService {
             @RequestParam(value = "delay", required = false, defaultValue = "0") int delay,
             @RequestParam(value = "faultPercent", required = false, defaultValue = "0") int faultPercent
     );
+
+    Flux<Student> getStudent(List<Integer> studentIds);
 
     /**
      * Sample usage:

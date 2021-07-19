@@ -7,6 +7,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import yejun.api.course.Course;
@@ -34,12 +35,23 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
     private final EnrolmentMapper mapper;
 
+    private final WebClient.Builder webClientBuilder;
+
+    private WebClient webClient;
+
 
     @Autowired
-    public EnrolmentServiceImpl(ServiceUtil serviceUtil, EnrolmentRepository repository, EnrolmentMapper mapper) {
+    public EnrolmentServiceImpl(ServiceUtil serviceUtil, EnrolmentRepository repository, EnrolmentMapper mapper, WebClient.Builder webClientBuilder) {
         this.serviceUtil = serviceUtil;
         this.repository = repository;
         this.mapper = mapper;
+        this.webClientBuilder = webClientBuilder;
+    }
+
+    public WebClient getWebClient() {
+        if (webClient == null)
+            webClient = webClientBuilder.build();
+        return webClient;
     }
 
     @Override

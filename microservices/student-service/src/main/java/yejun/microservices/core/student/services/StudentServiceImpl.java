@@ -7,6 +7,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import yejun.api.student.Student;
 import yejun.api.student.StudentService;
@@ -16,6 +17,7 @@ import yejun.util.exceptions.InvalidInputException;
 import yejun.util.exceptions.NotFoundException;
 import yejun.util.http.ServiceUtil;
 
+import java.util.List;
 import java.util.Random;
 
 import static java.util.logging.Level.FINE;
@@ -74,6 +76,14 @@ public class StudentServiceImpl implements StudentService {
                 .log(null, FINE)
                 .map(e -> mapper.entityToApi(e))
                 .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+    }
+
+    public Flux<Student> getStudent(List<Integer> studentIds){
+        LOG.info("Will get students info for ids = {}", studentIds);
+
+        return repository.findAllByStudentIdIn(studentIds)
+                .log(null, FINE)
+                .map(e -> mapper.entityToApi(e));
     }
 
     @Override
