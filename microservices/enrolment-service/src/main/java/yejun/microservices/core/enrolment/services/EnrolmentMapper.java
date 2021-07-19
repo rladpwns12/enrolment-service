@@ -6,6 +6,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
 import yejun.api.enrolment.Enrolment;
+import yejun.api.enrolment.StudentSummary;
+import yejun.api.student.Student;
 import yejun.microservices.core.enrolment.persistence.EnrolmentEntity;
 
 @Mapper(componentModel = "spring")
@@ -20,6 +22,8 @@ public interface EnrolmentMapper {
             @Mapping(target = "version", ignore = true)
     })
     EnrolmentEntity apiToEntity(Enrolment api);
+
+    StudentSummary studentApiToSummary(Student api);
 
     @Mappings({
             @Mapping(target = "id", ignore = true),

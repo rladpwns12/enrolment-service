@@ -6,28 +6,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import yejun.api.common.ServiceAddresses;
 import yejun.api.course.Course;
 import yejun.api.enrolment.*;
+import yejun.api.student.Student;
 import yejun.microservices.core.enrolment.persistence.EnrolmentEntity;
 import yejun.microservices.core.enrolment.persistence.EnrolmentRepository;
 import yejun.util.exceptions.BadRequestException;
 import yejun.util.exceptions.InvalidInputException;
 import yejun.util.http.ServiceUtil;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 import static java.util.logging.Level.FINE;
+import static reactor.core.publisher.Flux.empty;
 
 @RestController
 public class EnrolmentServiceImpl implements EnrolmentService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EnrolmentServiceImpl.class);
+
+    private final String studentServiceUrl = "http://student";
 
     private final ServiceUtil serviceUtil;
 
@@ -90,9 +99,18 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                     return e;
                 });
         List<Integer> studentIds = enrolmentFlux.toStream().map(Enrolment::getStudentId).collect(Collectors.toList());
-        //TODO studentIds 를 이용해 StudentService와 event 메세지 방식 통신을 통해 Student정보 가져오기
+        URI url = UriComponentsBuilder.fromHttpUrl(studentServiceUrl).queryParam("studentIds", studentIds).build().encode().toUri();
 
-        return null;
+        LOG.debug("Will call the getStudent API on URL: {}", url);
+
+        Flux<Student> studentFlux = getWebClient().get().uri(url).headers(h -> h.addAll(headers)).retrieve().bodyToFlux(Student.class).log(null, FINE).onErrorResume(error -> empty());
+        List<Student> studentList = studentFlux.collectList().block();
+        String studentAddress = studentList.get(0).getServiceAddress();
+        ServiceAddresses serviceAddresses = new ServiceAddresses(serviceUtil.getServiceAddress(),null,studentAddress);
+
+        EnrolmentByCourse enrolmentByCourse = new EnrolmentByCourse(courseId, studentList.stream().map(student -> mapper.studentApiToSummary(student)).collect(Collectors.toList()), serviceAddresses);
+
+        return Mono.just(enrolmentByCourse);
     }
 
     @Override

@@ -83,7 +83,8 @@ public class StudentServiceImpl implements StudentService {
 
         return repository.findAllByStudentIdIn(studentIds)
                 .log(null, FINE)
-                .map(e -> mapper.entityToApi(e));
+                .map(e -> mapper.entityToApi(e))
+                .map(e ->{e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
     }
 
     @Override

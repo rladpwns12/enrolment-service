@@ -20,6 +20,15 @@ api:
         # Expected partial and error responses
         If no student information is found, a <b>404 - Not Found</b> error will be returned
 
+    get-students:
+      description: Returns students information of the specified student ids
+      notes: |
+        # Normal response
+        If the requested student ids is found the method will return students information
+
+        # Expected partial and error responses
+        If no student information is found, a <b>404 - Not Found</b> error will be returned
+
     update-student:
       description: Update a student
       notes: |
