@@ -5,6 +5,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
+import yejun.api.course.Course;
+import yejun.api.enrolment.CourseSummary;
 import yejun.api.enrolment.Enrolment;
 import yejun.api.enrolment.StudentSummary;
 import yejun.api.student.Student;
@@ -30,4 +32,6 @@ public interface EnrolmentMapper {
             @Mapping(target = "version", ignore = true)
     })
     EnrolmentEntity updateEntity(Enrolment api, @MappingTarget EnrolmentEntity entity);
+
+    CourseSummary courseApiToSummary(Course api);
 }

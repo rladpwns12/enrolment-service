@@ -24,6 +24,7 @@ import yejun.util.exceptions.InvalidInputException;
 import yejun.util.http.ServiceUtil;
 
 import java.net.URI;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -37,6 +38,8 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     private static final Logger LOG = LoggerFactory.getLogger(EnrolmentServiceImpl.class);
 
     private final String studentServiceUrl = "http://student";
+
+    private final String courseServiceUrl = "http://course";
 
     private final ServiceUtil serviceUtil;
 
@@ -99,7 +102,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                     return e;
                 });
         List<Integer> studentIds = enrolmentFlux.toStream().map(Enrolment::getStudentId).collect(Collectors.toList());
-        URI url = UriComponentsBuilder.fromHttpUrl(studentServiceUrl).queryParam("studentIds", studentIds).build().encode().toUri();
+        URI url = UriComponentsBuilder.fromUriString(studentServiceUrl + "/student").queryParam("studentIds", studentIds).build().encode().toUri();
 
         LOG.debug("Will call the getStudent API on URL: {}", url);
 
@@ -132,9 +135,19 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                     return e;
                 });
         List<Long> courseIds = enrolmentFlux.toStream().map(Enrolment::getCourseId).collect(Collectors.toList());
-        //TODO courseIds 를 이용해 CourseService와 event 메세지 방식 통신을 통해 Course 정보 가져오기
 
-        return null;
+        URI url = UriComponentsBuilder.fromUriString(courseServiceUrl + "/course").queryParam("courseIds", courseIds).build().encode().toUri();
+
+        LOG.debug("Will call the getCourse API on URL: {}", url);
+
+        Flux<Course> courseFlux = getWebClient().get().uri(url).headers(h -> h.addAll(headers)).retrieve().bodyToFlux(Course.class).log(null, FINE).onErrorResume(error -> empty());
+        List<Course> courseList = courseFlux.collectList().block();
+        String courseAddress = courseList.get(0).getServiceAddress();
+        ServiceAddresses serviceAddresses = new ServiceAddresses(serviceUtil.getServiceAddress(),courseAddress,null);
+
+        EnrolmentByStudent enrolmentByStudent = new EnrolmentByStudent(studentId, courseList.stream().map(course -> mapper.courseApiToSummary(course)).collect(Collectors.toList()), serviceAddresses);
+
+        return Mono.just(enrolmentByStudent);
     }
 
     @Override
@@ -148,26 +161,29 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
         LOG.info("Will Enrolment info for student id={}, course id = {}", studentId, courseId);
 
-        repository.findByStudentId(studentId)
-                .map(e ->{
-                    if(e.getStudentId().equals(studentId))
-                        throw new BadRequestException("Already enrolment course, courseId = " + courseId);
-                    return e;
-                });
+        if(repository.findByStudentIdAndCourseId(studentId, courseId).hasElement().block())
+            throw new BadRequestException("Already enrolment course, courseId = " + courseId);
 
-        repository.findAllByCourseIdAndStudentIdIsNull(courseId)
+        Iterable<EnrolmentEntity> enrolmentEntities = repository.findAllByCourseIdAndStudentIdIsNull(courseId)
                 .switchIfEmpty(Flux.error(new BadRequestException("It's full of Students for course id = " + courseId)))
-                .toIterable().forEach(e ->{
-                    try{
-                        e.setStudentId(studentId);
-                        repository.save(e)
-                        .log(null, FINE);
-                        //TODO courseId에 해당하는 Course를 CourseService와 Event 메세지 통신 하여 가져오기
-                        return;
-                    }catch (OptimisticLockingFailureException o){
-                        LOG.info("enrolment fail try again... student id = {}, course id = {}", studentId, courseId);
-                    }
-                });
+                .toIterable();
+        Iterator<EnrolmentEntity> iterator = enrolmentEntities.iterator();
+        while (iterator.hasNext()){
+            try {
+                EnrolmentEntity next = iterator.next();
+                next.setStudentId(studentId);
+                repository.save(next).log(null, FINE);
+
+                URI url = UriComponentsBuilder.fromUriString(courseServiceUrl + "/course/{courseId}").build(courseId);
+                LOG.debug("Will call the getCourse API on URL: {}", url);
+                Mono<Course> course = getWebClient().get().uri(url).retrieve().bodyToMono(Course.class).log(null, FINE).onErrorResume(error -> Mono.empty());
+                return course;
+
+            }catch (OptimisticLockingFailureException o){
+                LOG.info("enrolment fail try again... student id = {}, course id = {}", studentId, courseId);
+            }
+        }
+
         throw new BadRequestException("It's full of Students for course id = " + courseId);
     }
 

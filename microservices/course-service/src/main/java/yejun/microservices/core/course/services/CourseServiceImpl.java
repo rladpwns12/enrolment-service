@@ -25,6 +25,7 @@ import yejun.util.exceptions.InvalidInputException;
 import yejun.util.exceptions.NotFoundException;
 import yejun.util.http.ServiceUtil;
 
+import java.util.List;
 import java.util.Random;
 
 import static java.util.logging.Level.FINE;
@@ -91,6 +92,16 @@ public class CourseServiceImpl implements CourseService {
                 .log(null, FINE)
                 .map(mapper::entityToApi)
                 .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+    }
+
+    @Override
+    public Flux<Course> getCourse(List<Long> courseIds) {
+        LOG.info("Will get courses info for ids = {}", courseIds);
+
+        return repository.findAllByCourseIdIn(courseIds)
+                .log(null, FINE)
+                .map(e -> mapper.entityToApi(e))
+                .map(e ->{e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
     }
 
     @Override
