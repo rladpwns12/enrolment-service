@@ -174,6 +174,10 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                 next.setStudentId(studentId);
                 repository.save(next).log(null, FINE);
 
+                //TODO course numberOfStudents, spare 업데이트
+                Long numberOfStudents = repository.findAllByCourseIdAndStudentIdIsNotNull(courseId).count().block();
+                Course update = new Course(courseId, numberOfStudents == null ? null : numberOfStudents.intValue());
+
                 URI url = UriComponentsBuilder.fromUriString(courseServiceUrl + "/course/{courseId}").build(courseId);
                 LOG.debug("Will call the getCourse API on URL: {}", url);
                 Mono<Course> course = getWebClient().get().uri(url).retrieve().bodyToMono(Course.class).log(null, FINE).onErrorResume(error -> Mono.empty());

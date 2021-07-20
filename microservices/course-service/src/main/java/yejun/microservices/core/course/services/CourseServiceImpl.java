@@ -72,7 +72,7 @@ public class CourseServiceImpl implements CourseService {
                         ex -> new InvalidInputException("Duplicate key, Course Id: " + body.getCourseId()))
                 .map(mapper::entityToApi);
 
-        messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event(Event.Type.CREATE, body.getCourseId(), body)).build());
+        messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.CREATE, body.getCourseId(), body)).build());
 
         return newEntity;
     }
@@ -150,7 +150,8 @@ public class CourseServiceImpl implements CourseService {
         Mono<Course> updateEntity = repository.findByCourseId(courseId)
                 .switchIfEmpty(error(new NotFoundException("No course found for courseId: " + courseId)))
                 .map(e -> {
-                    updateCapacity[0] = e.getCapacity() - body.getCapacity();
+                    updateCapacity[0] = ((body.getCapacity() == null) ? 0 : e.getCapacity() - body.getCapacity());
+
                     if (updateCapacity[0] < 0)
                         throw new InvalidInputException("Can't reduce capacity.");
                     else {
@@ -160,7 +161,7 @@ public class CourseServiceImpl implements CourseService {
 
         if (updateCapacity[0] > 0) {
             body.setCapacity(updateCapacity[0]);
-            messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event(Event.Type.CREATE, body.getCourseId(), body)).build());
+            messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.CREATE, body.getCourseId(), body)).build());
         }
         return updateEntity;
     }
@@ -171,7 +172,7 @@ public class CourseServiceImpl implements CourseService {
         if (courseId < 1) throw new InvalidInputException("Invalid courseId: " + courseId);
 
         LOG.debug("deleteCourse: tries to delete an entity with courseId: {}", courseId);
-        return repository.findByCourseId(courseId).log(null, FINE).map(e -> repository.delete(e)).flatMap(e -> e);
+        return repository.findByCourseId(courseId).log(null, FINE).map(repository::delete).flatMap(e -> e);
     }
 
 

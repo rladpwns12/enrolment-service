@@ -1,10 +1,7 @@
 package yejun.microservices.core.course.services;
 
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Mappings;
+import org.mapstruct.*;
 import yejun.api.course.Course;
 import yejun.microservices.core.course.persistence.CourseEntity;
 
@@ -27,5 +24,6 @@ public interface CourseMapper {
             @Mapping(target = "courseId", ignore = true),
             @Mapping(target = "numberOfStudents", ignore = true)
     })
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     CourseEntity updateEntity(Course api, @MappingTarget CourseEntity entity);
 }

@@ -7,6 +7,11 @@ public interface MessageSources {
 
     String OUTPUT_ENROLMENTS = "output-enrolments";
 
+    String OUTPUT_COURSES = "output-courses";
+
     @Output(OUTPUT_ENROLMENTS)
     MessageChannel outputEnrolments();
+
+    @Output(OUTPUT_COURSES)
+    MessageChannel outputCourses();
 }

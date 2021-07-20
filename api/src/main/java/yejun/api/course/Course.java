@@ -8,11 +8,11 @@ public class Course {
     private Department department;
     private String title;
     private String professorName;
-    private int credit;
-    private int numberOfStudents;
-    private int spare;
-    private int capacity;
-    private int year;
+    private Integer credit;
+    private Integer numberOfStudents;
+    private Integer spare;
+    private Integer capacity;
+    private Integer year;
     private Semester semester;
     private String serviceAddress;
 
@@ -21,17 +21,17 @@ public class Course {
         department = null;
         title = null;
         professorName = null;
-        credit = 0;
-        numberOfStudents = 0;
-        spare = 0;
-        capacity = 0;
-        year = 0;
+        credit = null;
+        numberOfStudents = null;
+        spare = null;
+        capacity = null;
+        year = null;
         semester = null;
         serviceAddress = null;
     }
 
-    public Course(Long courseId, Department department, String title, String professorName, int credit,
-                  int numberOfStudents, int spare, int capacity, int year, Semester semester, String serviceAddress
+    public Course(Long courseId, Department department, String title, String professorName, Integer credit,
+                  Integer numberOfStudents, Integer spare, Integer capacity, Integer year, Semester semester, String serviceAddress
     ) {
         this.courseId = courseId;
         this.department = department;
@@ -46,6 +46,10 @@ public class Course {
         this.serviceAddress = serviceAddress;
     }
 
+    public Course(Long courseId, Integer numberOfStudents){
+        this.courseId = courseId;
+        this.numberOfStudents = numberOfStudents;
+    }
     public Long getCourseId() {
         return courseId;
     }
@@ -78,43 +82,43 @@ public class Course {
         this.professorName = professorName;
     }
 
-    public int getCredit() {
+    public Integer getCredit() {
         return credit;
     }
 
-    public void setCredit(int credit) {
+    public void setCredit(Integer credit) {
         this.credit = credit;
     }
 
-    public int getNumberOfStudents() {
+    public Integer getNumberOfStudents() {
         return numberOfStudents;
     }
 
-    public void setNumberOfStudents(int numberOfStudents) {
+    public void setNumberOfStudents(Integer numberOfStudents) {
         this.numberOfStudents = numberOfStudents;
     }
 
-    public int getSpare() {
+    public Integer getSpare() {
         return spare;
     }
 
-    public void setSpare(int spare) {
+    public void setSpare(Integer spare) {
         this.spare = spare;
     }
 
-    public int getCapacity() {
+    public Integer getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(int capacity) {
+    public void setCapacity(Integer capacity) {
         this.capacity = capacity;
     }
 
-    public int getYear() {
+    public Integer getYear() {
         return year;
     }
 
-    public void setYear(int year) {
+    public void setYear(Integer year) {
         this.year = year;
     }
 

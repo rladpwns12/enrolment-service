@@ -1,4 +1,4 @@
-package yejun.microservices.core.enrolment.services;
+package yejun.microservices.core.course.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +7,7 @@ import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Sink;
 import yejun.api.course.Course;
+import yejun.api.course.CourseService;
 import yejun.api.enrolment.EnrolmentService;
 import yejun.api.event.Event;
 import yejun.util.exceptions.EventProcessingException;
@@ -16,11 +17,11 @@ public class MessageProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessageProcessor.class);
 
-    private final EnrolmentService enrolmentService;
+    private final CourseService courseService;
 
     @Autowired
-    public MessageProcessor(EnrolmentService enrolmentService) {
-        this.enrolmentService = enrolmentService;
+    public MessageProcessor(CourseService courseService) {
+        this.courseService = courseService;
     }
 
     @StreamListener(target = Sink.INPUT)
@@ -30,20 +31,17 @@ public class MessageProcessor {
 
         switch (event.getEventType()) {
 
-        case CREATE:
+        case UPDATE:
             Course course = event.getData();
             Long courseId = course.getCourseId();
-            int capacity = course.getCapacity();
 
-            LOG.info("Create {} of enrolments with ID: {}", capacity, courseId);
+            LOG.info("Upadate course with ID: {}", courseId);
 
-            for(int i=0; i<capacity; i++){
-                enrolmentService.createEnrolment(courseId);
-            }
+            courseService.updateCourse(course);
             break;
 
         default:
-            String errorMessage = "Incorrect event type: " + event.getEventType() + ", expected a CREATE event";
+            String errorMessage = "Incorrect event type: " + event.getEventType() + ", expected a UPDATE event";
             LOG.warn(errorMessage);
             throw new EventProcessingException(errorMessage);
         }
