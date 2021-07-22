@@ -35,9 +35,9 @@ public class MessageProcessor {
             Course course = event.getData();
             Long courseId = course.getCourseId();
 
-            LOG.info("Upadate course with ID: {}", courseId);
+            LOG.info("Update course by enrolment with ID: {}", courseId);
 
-            courseService.updateCourse(course);
+            courseService.updateCourseByEnrolment(course);
             break;
 
         default:

@@ -155,6 +155,7 @@ public class CourseServiceImpl implements CourseService {
                     if (updateCapacity[0] < 0)
                         throw new InvalidInputException("Can't reduce capacity.");
                     else {
+                        e.setSpare(e.getSpare() + updateCapacity[0]);
                         return repository.save(mapper.updateEntity(body, e));
                     }
                 }).flatMap(e -> e).map(mapper::entityToApi);
@@ -166,6 +167,17 @@ public class CourseServiceImpl implements CourseService {
         return updateEntity;
     }
 
+    @Override
+    public void updateCourseByEnrolment(Course body) {
+        Long courseId = body.getCourseId();
+
+        if (courseId < 1) throw new InvalidInputException("Invalid courseId: " + courseId);
+
+        repository.findByCourseId(courseId)
+                .switchIfEmpty(error(new NotFoundException("No course found for courseId: " + courseId)))
+                .map(e -> repository.save(mapper.updateEntityByEnrolment(body, e)));
+        return;
+    }
 
     @Override
     public Mono<Void> deleteCourse(Long courseId) {

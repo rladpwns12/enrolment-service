@@ -3,9 +3,11 @@ package yejun.microservices.core.enrolment.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,9 +15,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import yejun.api.common.MessageSources;
 import yejun.api.common.ServiceAddresses;
 import yejun.api.course.Course;
 import yejun.api.enrolment.*;
+import yejun.api.event.Event;
 import yejun.api.student.Student;
 import yejun.microservices.core.enrolment.persistence.EnrolmentEntity;
 import yejun.microservices.core.enrolment.persistence.EnrolmentRepository;
@@ -33,6 +37,7 @@ import static java.util.logging.Level.FINE;
 import static reactor.core.publisher.Flux.empty;
 
 @RestController
+@EnableBinding(MessageSources.class)
 public class EnrolmentServiceImpl implements EnrolmentService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EnrolmentServiceImpl.class);
@@ -49,15 +54,18 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
     private final WebClient.Builder webClientBuilder;
 
+    private final MessageSources messageSources;
+
     private WebClient webClient;
 
 
     @Autowired
-    public EnrolmentServiceImpl(ServiceUtil serviceUtil, EnrolmentRepository repository, EnrolmentMapper mapper, WebClient.Builder webClientBuilder) {
+    public EnrolmentServiceImpl(ServiceUtil serviceUtil, EnrolmentRepository repository, EnrolmentMapper mapper, WebClient.Builder webClientBuilder, MessageSources messageSources) {
         this.serviceUtil = serviceUtil;
         this.repository = repository;
         this.mapper = mapper;
         this.webClientBuilder = webClientBuilder;
+        this.messageSources = messageSources;
     }
 
     public WebClient getWebClient() {
@@ -174,9 +182,9 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                 next.setStudentId(studentId);
                 repository.save(next).log(null, FINE);
 
-                //TODO course numberOfStudents, spare 업데이트
                 Long numberOfStudents = repository.findAllByCourseIdAndStudentIdIsNotNull(courseId).count().block();
                 Course update = new Course(courseId, numberOfStudents == null ? null : numberOfStudents.intValue());
+                messageSources.outputCourses().send(MessageBuilder.withPayload(new Event<>(Event.Type.UPDATE, update.getCourseId(), update)).build());
 
                 URI url = UriComponentsBuilder.fromUriString(courseServiceUrl + "/course/{courseId}").build(courseId);
                 LOG.debug("Will call the getCourse API on URL: {}", url);
@@ -187,7 +195,6 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                 LOG.info("enrolment fail try again... student id = {}, course id = {}", studentId, courseId);
             }
         }
-
         throw new BadRequestException("It's full of Students for course id = " + courseId);
     }
 

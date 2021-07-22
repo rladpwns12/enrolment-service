@@ -123,6 +123,8 @@ public interface CourseService {
             consumes = "application/json")
     Mono<Course> updateCourse(@RequestBody Course body);
 
+    void updateCourseByEnrolment(Course body);
+
     /**
      * Sample usage:
      *
