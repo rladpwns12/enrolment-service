@@ -1,6 +1,20 @@
 api:
 
+  common:
+    version: 1.0.0
+    title: Student API
+    description: RESTful API student
+    termsOfServiceUrl: terms of url
+    license: all rights reserved yejun kim
+    licenseUrl: https://github.com/rladpwns12
+
+    contact:
+      name: yejun kim
+      url: https://github.com/rladpwns12
+      email: rladpwns12@gmail.com
+
   student:
+
     create-student:
       description: Creates a student
       notes: |
@@ -48,6 +62,72 @@ api:
         This means that a delete request of a non existing student will return <b>200 Ok</b>.
 
 
+server.port: 7001
+server.error.include-message: always
+
+spring.application.name: student
+
+spring.data.mongodb:
+  host: localhost
+  port: 27017
+  database: student-db
+
+
+spring.cloud.stream.kafka.bindings.input.consumer:
+  enableDlq: true
+
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri: http://${app.auth-server}/.well-known/jwks.json
+
+app.product-service.timeoutSec: 2
+
+resilience4j.retry:
+  backends:
+    product:
+      maxRetryAttempts: 3
+      waitDuration: 1000
+      retryExceptions:
+        - org.springframework.web.reactive.function.client.WebClientResponseException$InternalServerError
+
+management.health.circuitbreakers.enabled: true
+
+resilience4j.circuitbreaker:
+  backends:
+    product:
+      registerHealthIndicator: true
+      ringBufferSizeInClosedState: 5
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10000
+      ringBufferSizeInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      ignoreExceptions:
+        - yejun.util.exceptions.InvalidInputException
+        - yejun.util.exceptions.NotFoundException
+
+logging:
+  level:
+    root: INFO
+    yejun: DEBUG
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+
+---
+spring.profiles: docker
+
+server.port: 80
+
+spring.data.mongodb.host: mongodb
+
+---
+spring.profiles: prod
+
+spring.data.mongodb.host: 172.17.0.1
+
+logging:
+  level:
+    root: WARN
+    yejun: WARN
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: WARN
+    org.springframework.data.mongodb.core.MongoTemplate: WARN
 
 
 
