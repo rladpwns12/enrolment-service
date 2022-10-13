@@ -1,5 +1,6 @@
 package yejun.api.enrolment;
 
+import io.swagger.annotations.ApiModelProperty;
 import yejun.api.common.ServiceAddresses;
 import yejun.api.course.Course;
 
@@ -8,6 +9,7 @@ import java.util.List;
 public class EnrolmentByStudent {
     private Integer studentId;
     private List<CourseSummary> courses;
+    @ApiModelProperty(hidden = true)
     private ServiceAddresses serviceAddresses;
 
     public EnrolmentByStudent() {

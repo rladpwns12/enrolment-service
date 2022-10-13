@@ -12,6 +12,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import yejun.api.common.Department;
 import yejun.api.common.MessageSources;
 import yejun.api.common.Semester;
 import yejun.api.common.Type;
@@ -25,6 +26,7 @@ import yejun.util.exceptions.InvalidInputException;
 import yejun.util.exceptions.NotFoundException;
 import yejun.util.http.ServiceUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -58,40 +60,54 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Mono<Course> createCourse(Course body) {
-        if (body.getCourseId() < 1) throw new InvalidInputException("Invalid courseId: " + body.getCourseId());
-
+        body.setCourseId(2150685201L);
         body.setSpare(body.getCapacity());
         body.setNumberOfStudents(0);
-
-        CourseEntity entity = mapper.apiToEntity(body);
-
-        Mono<Course> newEntity = repository.save(entity)
-                .log(null, FINE)
-                .onErrorMap(
-                        DuplicateKeyException.class,
-                        ex -> new InvalidInputException("Duplicate key, Course Id: " + body.getCourseId()))
-                .map(mapper::entityToApi);
-
-        messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.CREATE, body.getCourseId(), body)).build());
-
-        return newEntity;
+        body.setProfessorName("김영한");
+        return Mono.just(body);
+//        if (body.getCourseId() < 1) throw new InvalidInputException("Invalid courseId: " + body.getCourseId());
+//
+//        body.setSpare(body.getCapacity());
+//        body.setNumberOfStudents(0);
+//
+//        CourseEntity entity = mapper.apiToEntity(body);
+//
+//        Mono<Course> newEntity = repository.save(entity)
+//                .log(null, FINE)
+//                .onErrorMap(
+//                        DuplicateKeyException.class,
+//                        ex -> new InvalidInputException("Duplicate key, Course Id: " + body.getCourseId()))
+//                .map(mapper::entityToApi);
+//
+//        messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.CREATE, body.getCourseId(), body)).build());
+//
+//        return newEntity;
     }
 
     @Override
-    public Mono<Course> getCourse(HttpHeaders headers, Long courseId, int delay, int faultPercent) {
-        if (courseId <1) throw new InvalidInputException("Invalid courseId: " + courseId);
+    public Mono<Course> getCourse(HttpHeaders headers, Long courseId) {
+        Course course = new Course();
+        course.setCourseId(courseId);
+        course.setCapacity(40);
+        course.setSpare(15);
+        course.setNumberOfStudents(25);
+        course.setProfessorName("김영한");
+        course.setCredit(3);
+        course.setDepartment(Department.IT_CONVERGENCE);
+        course.setSemester(Semester.FALL);
+        course.setTitle("클라우드융합");
+        course.setYear(2022);
 
-        if (delay > 0) simulateDelay(delay);
-
-        if (faultPercent > 0) throwErrorIfBadLuck(faultPercent);
-
-        LOG.info("Will get course info for id={}", courseId);
-
-        return repository.findByCourseId(courseId)
-                .switchIfEmpty(error(new NotFoundException("No Course found for courseId: " + courseId)))
-                .log(null, FINE)
-                .map(mapper::entityToApi)
-                .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+        return Mono.just(course);
+//        if (courseId <1) throw new InvalidInputException("Invalid courseId: " + courseId);
+//
+//        LOG.info("Will get course info for id={}", courseId);
+//
+//        return repository.findByCourseId(courseId)
+//                .switchIfEmpty(error(new NotFoundException("No Course found for courseId: " + courseId)))
+//                .log(null, FINE)
+//                .map(mapper::entityToApi)
+//                .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
     }
 
     @Override
@@ -105,16 +121,39 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Flux<Course> getCourses(HttpHeaders headers, CourseRequestDTO courseRequestDTO, int delay, int faultPercent) {
-        if (delay > 0) simulateDelay(delay);
+    public Flux<Course> getCourses(HttpHeaders headers, CourseRequestDTO courseRequestDTO) {
+        List<Course> courseList = new ArrayList<>();
+        Course course1 = new Course();
+        course1.setCourseId(2150685201L);
+        course1.setCapacity(40);
+        course1.setSpare(15);
+        course1.setNumberOfStudents(25);
+        course1.setProfessorName("김영한");
+        course1.setCredit(3);
+        course1.setDepartment(Department.IT_CONVERGENCE);
+        course1.setSemester(courseRequestDTO.getSemester());
+        course1.setTitle("클라우드융합");
+        course1.setYear(courseRequestDTO.getYear());
+        courseList.add(course1);
 
-        if (faultPercent > 0) throwErrorIfBadLuck(faultPercent);
-
-        LOG.info("Will get courses info for courseRequestDTO={}", courseRequestDTO.toString());
-
-        Pageable pageable = PageRequest.of(courseRequestDTO.getPage(), courseRequestDTO.getSize());
-
-        return getCoursesByType(courseRequestDTO.getType(), courseRequestDTO.getKeyword(), courseRequestDTO.getYear(), courseRequestDTO.getSemester(), pageable);
+        Course course2 = new Course();
+        course2.setCourseId(25685201L);
+        course2.setCapacity(50);
+        course2.setSpare(1);
+        course2.setNumberOfStudents(49);
+        course2.setProfessorName("Anjolinya Jolyeo");
+        course2.setCredit(4);
+        course2.setDepartment(Department.SCHOOL_OF_BUSINESS_ADMINISTRATION);
+        course2.setSemester(courseRequestDTO.getSemester());
+        course2.setTitle("Zip e ga go ship da");
+        course2.setYear(courseRequestDTO.getYear());
+        courseList.add(course2);
+        return Flux.just(courseList.toArray(new Course[courseList.size()]));
+//        LOG.info("Will get courses info for courseRequestDTO={}", courseRequestDTO.toString());
+//
+//        Pageable pageable = PageRequest.of(courseRequestDTO.getPage(), courseRequestDTO.getSize());
+//
+//        return getCoursesByType(courseRequestDTO.getType(), courseRequestDTO.getKeyword(), courseRequestDTO.getYear(), courseRequestDTO.getSemester(), pageable);
     }
 
     private Flux<Course> getCoursesByType(Type type, String keyword, int year, Semester semester, Pageable pageable){

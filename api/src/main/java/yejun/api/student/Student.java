@@ -1,13 +1,17 @@
 package yejun.api.student;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import yejun.api.common.Department;
 
 public class Student {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer studentId;
     private String name;
     private String email;
     private String password;
     private Department department;
+    @ApiModelProperty(hidden = true)
     private String serviceAddress;
 
     public Student() {

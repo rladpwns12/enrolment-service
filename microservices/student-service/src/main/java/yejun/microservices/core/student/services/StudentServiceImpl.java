@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import yejun.api.common.Department;
 import yejun.api.student.Student;
 import yejun.api.student.StudentService;
 import yejun.microservices.core.student.persistence.StudentEntity;
@@ -44,37 +45,41 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Mono<Student> createStudent(Student body) {
-        if (body.getStudentId() < 1) throw new InvalidInputException("Invalid studentId: " + body.getStudentId());
-
-//        String hash = encoder.encode(body.getPassword());
-//        body.setPassword(hash);
-        StudentEntity entity = mapper.apiToEntity(body);
-
-        Mono<Student> newEntity = repository.save(entity)
-                .log(null, FINE)
-                .onErrorMap(
-                        DuplicateKeyException.class,
-                        ex -> new InvalidInputException("Duplicate key, Student Id: " + body.getStudentId()))
-                .map(e -> mapper.entityToApi(e));
-
-        return newEntity;
+        body.setStudentId(20221013);
+        return Mono.just(body);
+//        if (body.getStudentId() < 1) throw new InvalidInputException("Invalid studentId: " + body.getStudentId());
+//
+////        String hash = encoder.encode(body.getPassword());
+////        body.setPassword(hash);
+//        StudentEntity entity = mapper.apiToEntity(body);
+//
+//        Mono<Student> newEntity = repository.save(entity)
+//                .log(null, FINE)
+//                .onErrorMap(
+//                        DuplicateKeyException.class,
+//                        ex -> new InvalidInputException("Duplicate key, Student Id: " + body.getStudentId()))
+//                .map(e -> mapper.entityToApi(e));
+//
+//        return newEntity;
     }
 
     @Override
-    public Mono<Student> getStudent(HttpHeaders headers, Integer studentId, int delay, int faultPercent) {
-        if (studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
-
-        if (delay > 0) simulateDelay(delay);
-
-        if (faultPercent > 0) throwErrorIfBadLuck(faultPercent);
-
-        LOG.info("Will get student info for id={}", studentId);
-
-        return repository.findByStudentId(studentId)
-                .switchIfEmpty(error(new NotFoundException("No student found for studentId: " + studentId)))
-                .log(null, FINE)
-                .map(e -> mapper.entityToApi(e))
-                .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+    public Mono<Student> getStudent(HttpHeaders headers, Integer studentId) {
+        Student student = new Student();
+        student.setStudentId(studentId);
+        student.setdepartment(Department.IT_CONVERGENCE);
+        student.setEmail("rladpwns12@gmail.com");
+        student.setName("김예준");
+        return Mono.just(student);
+//        if (studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
+//
+//        LOG.info("Will get student info for id={}", studentId);
+//
+//        return repository.findByStudentId(studentId)
+//                .switchIfEmpty(error(new NotFoundException("No student found for studentId: " + studentId)))
+//                .log(null, FINE)
+//                .map(e -> mapper.entityToApi(e))
+//                .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
     }
 
     public Flux<Student> getStudent(List<Integer> studentIds){

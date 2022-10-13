@@ -1,8 +1,11 @@
 package yejun.api.enrolment;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class Enrolment {
     private Integer studentId;
     private Long courseId;
+    @ApiModelProperty(hidden = true)
     private String serviceAddress;
 
     public Enrolment(){
