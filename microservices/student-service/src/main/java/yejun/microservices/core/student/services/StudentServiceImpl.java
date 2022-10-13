@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,7 +27,7 @@ public class StudentServiceImpl implements StudentService {
 
     private static final Logger LOG = LoggerFactory.getLogger(StudentServiceImpl.class);
 
-    private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//    private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     private final ServiceUtil serviceUtil;
 
@@ -47,8 +46,8 @@ public class StudentServiceImpl implements StudentService {
     public Mono<Student> createStudent(Student body) {
         if (body.getStudentId() < 1) throw new InvalidInputException("Invalid studentId: " + body.getStudentId());
 
-        String hash = encoder.encode(body.getPassword());
-        body.setPassword(hash);
+//        String hash = encoder.encode(body.getPassword());
+//        body.setPassword(hash);
         StudentEntity entity = mapper.apiToEntity(body);
 
         Mono<Student> newEntity = repository.save(entity)

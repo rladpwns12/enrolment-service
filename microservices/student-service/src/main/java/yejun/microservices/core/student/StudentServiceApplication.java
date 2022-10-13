@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.mapping.context.MappingContext;
@@ -37,15 +38,15 @@ public class StudentServiceApplication {
 
 	private static final Logger LOG = LoggerFactory.getLogger(StudentServiceApplication.class);
 
-	@Value("${api.common.version}")           String apiVersion;
-	@Value("${api.common.title}")             String apiTitle;
-	@Value("${api.common.description}")       String apiDescription;
-	@Value("${api.common.termsOfServiceUrl}") String apiTermsOfServiceUrl;
-	@Value("${api.common.license}")           String apiLicense;
-	@Value("${api.common.licenseUrl}")        String apiLicenseUrl;
-	@Value("${api.common.contact.name}")      String apiContactName;
-	@Value("${api.common.contact.url}")       String apiContactUrl;
-	@Value("${api.common.contact.email}")     String apiContactEmail;
+	@Value("${api.student.common.version}")           String apiVersion;
+	@Value("${api.student.common.title}")             String apiTitle;
+	@Value("${api.student.common.description}")       String apiDescription;
+	@Value("${api.student.common.termsOfServiceUrl}") String apiTermsOfServiceUrl;
+	@Value("${api.student.common.license}")           String apiLicense;
+	@Value("${api.student.common.licenseUrl}")        String apiLicenseUrl;
+	@Value("${api.student.common.contact.name}")      String apiContactName;
+	@Value("${api.student.common.contact.url}")       String apiContactUrl;
+	@Value("${api.student.common.contact.email}")     String apiContactEmail;
 
 	/**
 	 * Will exposed on $HOST:$PORT/swagger-ui.html
@@ -57,7 +58,7 @@ public class StudentServiceApplication {
 
 		return new Docket(SWAGGER_2)
 				.select()
-				.apis(basePackage("yejun.microservices.student"))
+				.apis(basePackage("yejun.microservices.core.student"))
 				.paths(PathSelectors.any())
 				.build()
 				.useDefaultResponseMessages(true)
