@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -41,6 +42,7 @@ import static reactor.core.publisher.Flux.empty;
 
 @RestController
 @EnableBinding(MessageSources.class)
+@CrossOrigin
 public class EnrolmentServiceImpl implements EnrolmentService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EnrolmentServiceImpl.class);

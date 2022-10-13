@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,6 +25,7 @@ import static java.util.logging.Level.FINE;
 import static reactor.core.publisher.Mono.error;
 
 @RestController
+@CrossOrigin
 public class StudentServiceImpl implements StudentService {
 
     private static final Logger LOG = LoggerFactory.getLogger(StudentServiceImpl.class);
