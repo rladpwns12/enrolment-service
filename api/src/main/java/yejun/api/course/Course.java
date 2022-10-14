@@ -1,23 +1,33 @@
 package yejun.api.course;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import yejun.api.common.Department;
 import yejun.api.common.Semester;
 
 public class Course {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long courseId;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private Integer studentId;
     private Department department;
     private String title;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String professorName;
     private Integer credit;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer numberOfStudents;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer spare;
     private Integer capacity;
     private Integer year;
     private Semester semester;
+    @ApiModelProperty(hidden = true)
     private String serviceAddress;
 
     public Course() {
         courseId = null;
+        studentId = null;
         department = null;
         title = null;
         professorName = null;
@@ -30,10 +40,11 @@ public class Course {
         serviceAddress = null;
     }
 
-    public Course(Long courseId, Department department, String title, String professorName, Integer credit,
+    public Course(Long courseId, Integer studentId, Department department, String title, String professorName, Integer credit,
                   Integer numberOfStudents, Integer spare, Integer capacity, Integer year, Semester semester, String serviceAddress
     ) {
         this.courseId = courseId;
+        this.studentId = studentId;
         this.department = department;
         this.title = title;
         this.professorName = professorName;
@@ -56,6 +67,14 @@ public class Course {
 
     public void setCourseId(Long courseId) {
         this.courseId = courseId;
+    }
+
+    public Integer getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(Integer studentId) {
+        this.studentId = studentId;
     }
 
     public Department getDepartment() {

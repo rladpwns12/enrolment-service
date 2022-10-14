@@ -22,7 +22,9 @@ public interface EnrolmentService {
      */
     @ApiOperation(
             value = "${api.enrolment.create-enrolment.description}",
-            notes = "${api.enrolment.create-enrolment.notes}")
+            notes = "${api.enrolment.create-enrolment.notes}",
+            hidden = true
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, invalid format of the request. See response message for more information."),
             @ApiResponse(code = 422, message = "Unprocessable entity, input parameters caused the processing to fail. See response message for more information.")
@@ -40,7 +42,9 @@ public interface EnrolmentService {
      */
     @ApiOperation(
             value = "${api.enrolment.get-enrolment.description}",
-            notes = "${api.enrolment.get-enrolment.notes}")
+            notes = "${api.enrolment.get-enrolment.notes}",
+            hidden = true
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, invalid format of the request. See response message for more information."),
             @ApiResponse(code = 422, message = "Unprocessable entity, input parameters caused the processing to fail. See response message for more information.")
@@ -74,9 +78,7 @@ public interface EnrolmentService {
             produces = "application/json")
     Mono<EnrolmentByStudent> getEnrolmentByStudent(
             @RequestHeader HttpHeaders headers,
-            EnrolmentStudentDTO enrolmentStudentDTO,
-            @RequestParam(value = "delay", required = false, defaultValue = "0") int delay,
-            @RequestParam(value = "faultPercent", required = false, defaultValue = "0") int faultPercent
+            EnrolmentStudentDTO enrolmentStudentDTO
     );
 
     /**

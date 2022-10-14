@@ -54,9 +54,7 @@ public interface StudentService {
             produces = "application/json")
     Mono<Student> getStudent(
             @RequestHeader HttpHeaders headers,
-            @PathVariable Integer studentId,
-            @RequestParam(value = "delay", required = false, defaultValue = "0") int delay,
-            @RequestParam(value = "faultPercent", required = false, defaultValue = "0") int faultPercent
+            @PathVariable Integer studentId
     );
 
     /**
@@ -67,7 +65,8 @@ public interface StudentService {
      */
     @ApiOperation(
             value = "${api.student.get-students.description}",
-            notes = "${api.student.get-students.notes}")
+            notes = "${api.student.get-students.notes}",
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, invalid format of the request. See response message for more information."),
             @ApiResponse(code = 404, message = "Not found, the specified id does not exist."),
@@ -89,7 +88,9 @@ public interface StudentService {
      */
     @ApiOperation(
             value = "${api.student.update-student.description}",
-            notes = "${api.student.update-student.notes}")
+            notes = "${api.student.update-student.notes}",
+            hidden = true
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, invalid format of the request. See response message for more information."),
             @ApiResponse(code = 422, message = "Unprocessable entity, input parameters caused the processing to fail. See response message for more information.")
@@ -108,7 +109,9 @@ public interface StudentService {
      */
     @ApiOperation(
             value = "${api.student.delete-student.description}",
-            notes = "${api.student.delete-student.notes}")
+            notes = "${api.student.delete-student.notes}",
+            hidden = true
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, invalid format of the request. See response message for more information."),
             @ApiResponse(code = 422, message = "Unprocessable entity, input parameters caused the processing to fail. See response message for more information.")
