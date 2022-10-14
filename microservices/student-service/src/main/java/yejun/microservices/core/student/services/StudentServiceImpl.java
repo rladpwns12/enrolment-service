@@ -18,8 +18,10 @@ import yejun.util.exceptions.InvalidInputException;
 import yejun.util.exceptions.NotFoundException;
 import yejun.util.http.ServiceUtil;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import static java.util.logging.Level.FINE;
 import static reactor.core.publisher.Mono.error;
@@ -47,50 +49,43 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Mono<Student> createStudent(Student body) {
-        body.setStudentId(20221013);
-        return Mono.just(body);
-//        if (body.getStudentId() < 1) throw new InvalidInputException("Invalid studentId: " + body.getStudentId());
-//
-////        String hash = encoder.encode(body.getPassword());
-////        body.setPassword(hash);
-//        StudentEntity entity = mapper.apiToEntity(body);
-//
-//        Mono<Student> newEntity = repository.save(entity)
-//                .log(null, FINE)
-//                .onErrorMap(
-//                        DuplicateKeyException.class,
-//                        ex -> new InvalidInputException("Duplicate key, Student Id: " + body.getStudentId()))
-//                .map(e -> mapper.entityToApi(e));
-//
-//        return newEntity;
+        if (body.getStudentId() == null || body.getStudentId() < 1) throw new InvalidInputException("Invalid studentId: " + body.getStudentId());
+
+        StudentEntity entity = mapper.apiToEntity(body);
+
+        Mono<Student> newEntity = repository.save(entity)
+                .log(null, FINE)
+                .onErrorMap(
+                        DuplicateKeyException.class,
+                        ex -> new InvalidInputException("Duplicate key, Student Id: " + body.getStudentId()))
+                .map(e -> mapper.entityToApi(e));
+
+        return newEntity;
     }
 
     @Override
     public Mono<Student> getStudent(HttpHeaders headers, Integer studentId) {
-        Student student = new Student();
-        student.setStudentId(studentId);
-        student.setdepartment(Department.IT_CONVERGENCE);
-        student.setEmail("rladpwns12@gmail.com");
-        student.setName("김예준");
-        return Mono.just(student);
-//        if (studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
-//
-//        LOG.info("Will get student info for id={}", studentId);
-//
-//        return repository.findByStudentId(studentId)
-//                .switchIfEmpty(error(new NotFoundException("No student found for studentId: " + studentId)))
-//                .log(null, FINE)
-//                .map(e -> mapper.entityToApi(e))
-//                .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+        if (studentId == null || studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
+
+        LOG.info("Will get student info for id={}", studentId);
+
+        return repository.findByStudentId(studentId)
+                .switchIfEmpty(error(new NotFoundException("No student found for studentId: " + studentId)))
+                .log(null, FINE)
+                .map(e -> mapper.entityToApi(e))
+                .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
     }
 
-    public Flux<Student> getStudent(List<Integer> studentIds){
+    public Flux<Student> getStudent(List<Integer> studentIds) {
         LOG.info("Will get students info for ids = {}", studentIds);
 
         return repository.findAllByStudentIdIn(studentIds)
                 .log(null, FINE)
                 .map(e -> mapper.entityToApi(e))
-                .map(e ->{e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+                .map(e -> {
+                    e.setServiceAddress(serviceUtil.getServiceAddress());
+                    return e;
+                });
     }
 
     @Override
@@ -115,7 +110,10 @@ public class StudentServiceImpl implements StudentService {
 
     private void simulateDelay(int delay) {
         LOG.debug("Sleeping for {} seconds...", delay);
-        try {Thread.sleep(delay * 1000);} catch (InterruptedException e) {}
+        try {
+            Thread.sleep(delay * 1000);
+        } catch (InterruptedException e) {
+        }
         LOG.debug("Moving on...");
     }
 
@@ -130,6 +128,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     private final Random randomNumberGenerator = new Random();
+
     private int getRandomNumber(int min, int max) {
 
         if (max < min) {

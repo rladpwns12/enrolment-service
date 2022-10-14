@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import yejun.api.common.Department;
 
 public class Student {
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer studentId;
     private String name;
     private String email;
