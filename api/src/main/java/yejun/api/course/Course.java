@@ -6,9 +6,7 @@ import yejun.api.common.Department;
 import yejun.api.common.Semester;
 
 public class Course {
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long courseId;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Integer studentId;
     private Department department;
     private String title;

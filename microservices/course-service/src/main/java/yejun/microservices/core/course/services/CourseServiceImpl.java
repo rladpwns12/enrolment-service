@@ -62,28 +62,28 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Mono<Course> createCourse(Course body) {
-        body.setCourseId(2150685201L);
-        body.setSpare(body.getCapacity());
-        body.setNumberOfStudents(0);
-        body.setProfessorName("김영한");
-        return Mono.just(body);
-//        if (body.getCourseId() < 1) throw new InvalidInputException("Invalid courseId: " + body.getCourseId());
-//
+//        body.setCourseId(2150685201L);
 //        body.setSpare(body.getCapacity());
 //        body.setNumberOfStudents(0);
-//
-//        CourseEntity entity = mapper.apiToEntity(body);
-//
-//        Mono<Course> newEntity = repository.save(entity)
-//                .log(null, FINE)
-//                .onErrorMap(
-//                        DuplicateKeyException.class,
-//                        ex -> new InvalidInputException("Duplicate key, Course Id: " + body.getCourseId()))
-//                .map(mapper::entityToApi);
-//
-//        messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.CREATE, body.getCourseId(), body)).build());
-//
-//        return newEntity;
+//        body.setProfessorName("김영한");
+//        return Mono.just(body);
+        if (body.getCourseId() == null || body.getCourseId() < 1) throw new InvalidInputException("Invalid courseId: " + body.getCourseId());
+
+        body.setSpare(body.getCapacity());
+        body.setNumberOfStudents(0);
+
+        CourseEntity entity = mapper.apiToEntity(body);
+
+        Mono<Course> newEntity = repository.save(entity)
+                .log(null, FINE)
+                .onErrorMap(
+                        DuplicateKeyException.class,
+                        ex -> new InvalidInputException("Duplicate key, Course Id: " + body.getCourseId()))
+                .map(mapper::entityToApi);
+
+        messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.CREATE, body.getCourseId(), body)).build());
+
+        return newEntity;
     }
 
     @Override
