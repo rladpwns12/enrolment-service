@@ -30,22 +30,22 @@ public class MessageProcessor {
 
         switch (event.getEventType()) {
 
-        case CREATE:
-            Course course = event.getData();
-            Long courseId = course.getCourseId();
-            int capacity = course.getCapacity();
+            case CREATE:
+                Course course = event.getData();
+                Long courseId = course.getCourseId();
+                int capacity = course.getCapacity();
 
-            LOG.info("Create {} of enrolments with ID: {}", capacity, courseId);
+                LOG.info("Create {} of enrolments with ID: {}", capacity, courseId);
 
-            for(int i=0; i<capacity; i++){
-                enrolmentService.createEnrolment(courseId);
-            }
-            break;
+                for (int i = 0; i < capacity; ++i) {
+                    enrolmentService.createEnrolment(courseId);
+                }
+                break;
 
-        default:
-            String errorMessage = "Incorrect event type: " + event.getEventType() + ", expected a CREATE event";
-            LOG.warn(errorMessage);
-            throw new EventProcessingException(errorMessage);
+            default:
+                String errorMessage = "Incorrect event type: " + event.getEventType() + ", expected a CREATE event";
+                LOG.warn(errorMessage);
+                throw new EventProcessingException(errorMessage);
         }
 
         LOG.info("Message processing done!");

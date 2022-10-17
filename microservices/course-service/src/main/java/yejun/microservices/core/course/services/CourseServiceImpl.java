@@ -11,6 +11,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import yejun.api.common.Department;
@@ -21,17 +23,20 @@ import yejun.api.course.Course;
 import yejun.api.course.CourseRequestDTO;
 import yejun.api.course.CourseService;
 import yejun.api.event.Event;
+import yejun.api.student.Student;
 import yejun.microservices.core.course.persistence.CourseEntity;
 import yejun.microservices.core.course.persistence.CourseRepository;
 import yejun.util.exceptions.InvalidInputException;
 import yejun.util.exceptions.NotFoundException;
 import yejun.util.http.ServiceUtil;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import static java.util.logging.Level.FINE;
+import static reactor.core.publisher.Flux.empty;
 import static reactor.core.publisher.Mono.error;
 
 
@@ -42,6 +47,13 @@ public class CourseServiceImpl implements CourseService {
 
     private final ServiceUtil serviceUtil;
 
+    private final String studentServiceUrl = "http://student";
+
+    private final String enrolmentServiceUrl = "http://enrolment";
+
+    private final WebClient.Builder webClientBuilder;
+
+    private WebClient webClient;
     private final CourseRepository repository;
 
     private final CourseMapper mapper;
@@ -51,27 +63,32 @@ public class CourseServiceImpl implements CourseService {
     private static final Logger LOG = LoggerFactory.getLogger(CourseServiceImpl.class);
 
     @Autowired
-    public CourseServiceImpl(ServiceUtil serviceUtil, CourseRepository repository, CourseMapper mapper, MessageSources messageSources) {
+    public CourseServiceImpl(ServiceUtil serviceUtil, CourseRepository repository, CourseMapper mapper,WebClient.Builder webClientBuilder, MessageSources messageSources) {
         this.serviceUtil = serviceUtil;
         this.repository = repository;
         this.mapper = mapper;
+        this.webClientBuilder = webClientBuilder;
         this.messageSources = messageSources;
     }
 
-
+    public WebClient getWebClient() {
+        if (webClient == null)
+            webClient = webClientBuilder.build();
+        return webClient;
+    }
 
     @Override
     public Mono<Course> createCourse(Course body) {
-//        body.setCourseId(2150685201L);
-//        body.setSpare(body.getCapacity());
-//        body.setNumberOfStudents(0);
-//        body.setProfessorName("김영한");
-//        return Mono.just(body);
-        if (body.getCourseId() == null || body.getCourseId() < 1) throw new InvalidInputException("Invalid courseId: " + body.getCourseId());
+
+        if (body.getCourseId() == null || body.getCourseId() < 1) return Mono.error(new InvalidInputException("Invalid courseId: " + body.getCourseId()));
+        if (body.getStudentId() == null || body.getStudentId() < 1) return Mono.error(new InvalidInputException("Invalid studentId: " + body.getStudentId()));
 
         body.setSpare(body.getCapacity());
         body.setNumberOfStudents(0);
-
+        URI url = UriComponentsBuilder.fromUriString(studentServiceUrl + "/student" + "/" + body.getStudentId()).build().encode().toUri();
+        Mono<Student> studentMono = getWebClient().get().uri(url).retrieve().bodyToMono(Student.class).log(null, FINE).onErrorResume(error -> Mono.empty());
+        Student student= studentMono.block();
+        body.setProfessorName(student.getName());
         CourseEntity entity = mapper.apiToEntity(body);
 
         Mono<Course> newEntity = repository.save(entity)
