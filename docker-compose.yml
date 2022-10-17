@@ -41,7 +41,7 @@ services:
         condition: service_healthy
 
   eureka:
-    build: spring-cloud/eureka-server
+    build: spring-cloud/eureka
     mem_limit: 350m
     ports:
       - "8761:8761"
