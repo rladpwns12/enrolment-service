@@ -3,3 +3,6 @@ include ':util'
 include ':microservices:student-service'
 include ':microservices:course-service'
 include ':microservices:enrolment-service'
+include 'spring-cloud:eureka'
+include ':spring-cloud:eureka-server'
+

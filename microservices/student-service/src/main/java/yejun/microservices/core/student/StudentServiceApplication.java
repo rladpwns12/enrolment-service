@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -74,12 +76,12 @@ public class StudentServiceApplication {
 				));
 	}
 
-//	@Bean
-//	@LoadBalanced
-//	public WebClient.Builder loadBalancedWebClientBuilder() {
-//		final WebClient.Builder builder = WebClient.builder();
-//		return builder;
-//	}
+	@Bean
+	@LoadBalanced
+	public WebClient.Builder loadBalancedWebClientBuilder() {
+		final WebClient.Builder builder = WebClient.builder();
+		return builder;
+	}
 
 	public static void main(String[] args) {
 

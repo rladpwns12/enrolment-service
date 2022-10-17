@@ -7,6 +7,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import yejun.api.common.Department;
@@ -34,14 +35,21 @@ public class StudentServiceImpl implements StudentService {
 
 //    private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
+    private final String enrolmentServiceUrl = "http://enrolment";
+
+    private final String courseServiceUrl = "http://course";
+
     private final ServiceUtil serviceUtil;
+
+    private final WebClient.Builder webClientBuilder;
 
     private final StudentRepository repository;
 
     private final StudentMapper mapper;
 
     @Autowired
-    public StudentServiceImpl(StudentRepository repository, StudentMapper mapper, ServiceUtil serviceUtil) {
+    public StudentServiceImpl(StudentRepository repository, StudentMapper mapper, ServiceUtil serviceUtil, WebClient.Builder webClientBuilder) {
+        this.webClientBuilder = webClientBuilder;
         this.repository = repository;
         this.mapper = mapper;
         this.serviceUtil = serviceUtil;
