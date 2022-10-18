@@ -3,6 +3,7 @@ package yejun.microservices.core.student.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import yejun.api.common.Department;
+import yejun.api.common.MessageSources;
 import yejun.api.student.Student;
 import yejun.api.student.StudentService;
 import yejun.microservices.core.student.persistence.StudentEntity;
@@ -28,6 +30,7 @@ import static java.util.logging.Level.FINE;
 import static reactor.core.publisher.Mono.error;
 
 @RestController
+@EnableBinding(MessageSources.class)
 @CrossOrigin
 public class StudentServiceImpl implements StudentService {
 

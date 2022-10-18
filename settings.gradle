@@ -5,4 +5,5 @@ include ':microservices:course-service'
 include ':microservices:enrolment-service'
 include 'spring-cloud:eureka'
 include ':spring-cloud:eureka-server'
+include 'spring-cloud:gateway'
 
