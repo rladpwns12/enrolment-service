@@ -7,7 +7,11 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+import springfox.documentation.annotations.ApiIgnore;
 import yejun.api.course.Course;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Api("REST API for Enrolment information.")
 public interface EnrolmentService {
@@ -122,4 +126,8 @@ public interface EnrolmentService {
             value    = "/enrolment",
             consumes = "application/json")
     Mono<Void> deleteEnrolment(@RequestBody Enrolment body);
+
+    @GetMapping("/enrolment/api")
+    @ApiIgnore
+    void api(HttpServletResponse response) throws IOException;
 }

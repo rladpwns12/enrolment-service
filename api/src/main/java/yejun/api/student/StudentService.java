@@ -8,7 +8,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 @Api("REST API for student information.")
@@ -118,4 +121,8 @@ public interface StudentService {
     })
     @DeleteMapping(value = "/student/{studentId}")
     Mono<Void> deleteStudent(@PathVariable Integer studentId);
+
+    @GetMapping("/student/api")
+    @ApiIgnore
+    void api(HttpServletResponse response) throws IOException;
 }

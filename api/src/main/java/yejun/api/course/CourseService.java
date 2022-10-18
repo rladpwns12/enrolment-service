@@ -9,7 +9,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 @Api("REST API for course information.")
@@ -144,4 +147,8 @@ public interface CourseService {
     })
     @DeleteMapping(value = "/course/{courseId}")
     Mono<Void> deleteCourse(@PathVariable Long courseId);
+
+    @GetMapping("/course/api")
+    @ApiIgnore
+    void api(HttpServletResponse response) throws IOException;
 }

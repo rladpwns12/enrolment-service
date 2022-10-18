@@ -30,6 +30,8 @@ import yejun.util.exceptions.BadRequestException;
 import yejun.util.exceptions.InvalidInputException;
 import yejun.util.http.ServiceUtil;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -291,5 +293,11 @@ public class EnrolmentServiceImpl implements EnrolmentService {
         }
 
         return randomNumberGenerator.nextInt((max - min) + 1) + min;
+    }
+
+    @Override
+    public void api(HttpServletResponse response) throws IOException {
+        String redirect_uri = "/swagger-ui/index.html";
+        response.sendRedirect(redirect_uri);
     }
 }

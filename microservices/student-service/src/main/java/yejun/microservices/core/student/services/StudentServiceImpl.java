@@ -21,6 +21,8 @@ import yejun.util.exceptions.InvalidInputException;
 import yejun.util.exceptions.NotFoundException;
 import yejun.util.http.ServiceUtil;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
@@ -60,7 +62,8 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Mono<Student> createStudent(Student body) {
-        if (body.getStudentId() == null || body.getStudentId() < 1) throw new InvalidInputException("Invalid studentId: " + body.getStudentId());
+        if (body.getStudentId() == null || body.getStudentId() < 1)
+            throw new InvalidInputException("Invalid studentId: " + body.getStudentId());
 
         StudentEntity entity = mapper.apiToEntity(body);
 
@@ -84,7 +87,10 @@ public class StudentServiceImpl implements StudentService {
                 .switchIfEmpty(error(new NotFoundException("No student found for studentId: " + studentId)))
                 .log(null, FINE)
                 .map(e -> mapper.entityToApi(e))
-                .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+                .map(e -> {
+                    e.setServiceAddress(serviceUtil.getServiceAddress());
+                    return e;
+                });
     }
 
     public Flux<Student> getStudent(List<Integer> studentIds) {
@@ -117,6 +123,12 @@ public class StudentServiceImpl implements StudentService {
         LOG.debug("deleteStudent: tries to delete an entity with studentId: {}", studentId);
 
         return repository.findByStudentId(studentId).log(null, FINE).map(e -> repository.delete(e)).flatMap(e -> e);
+    }
+
+    @Override
+    public void api(HttpServletResponse response) throws IOException {
+        String redirect_uri = "/swagger-ui/index.html";
+        response.sendRedirect(redirect_uri);
     }
 
     private void simulateDelay(int delay) {
