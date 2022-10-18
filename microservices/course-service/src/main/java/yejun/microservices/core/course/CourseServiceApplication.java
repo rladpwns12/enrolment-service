@@ -104,4 +104,5 @@ public class CourseServiceApplication {
 		resolver.resolveIndexFor(CourseEntity.class).forEach(e -> indexOps.ensureIndex(e).block());
 	}
 
+
 }
