@@ -81,6 +81,15 @@ spring.cloud.stream:
   bindings.input:
     destination: courses
     group: coursesgroup
+  bindings:
+    output-students:
+      destination: students
+      producer:
+        required-groups: auditGroup
+    output-enrolments:
+      destination: enrolments
+      producer:
+        required-groups: auditGroup
 
 spring.cloud.stream.bindings.input.consumer:
   maxAttempts: 3
