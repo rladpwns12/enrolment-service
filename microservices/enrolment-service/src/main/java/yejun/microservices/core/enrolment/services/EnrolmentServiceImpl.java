@@ -84,7 +84,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     @Override
     public Mono<Enrolment> createEnrolment(EnrolmentDTO enrolmentDTO) {
         Long courseId = enrolmentDTO.getCourseId();
-        if (courseId < 1) throw new InvalidInputException("Invalid courseId: " + courseId);
+        if (courseId < 1) return Mono.error(new InvalidInputException("Invalid courseId: " + courseId));
 
         Enrolment enrolment = new Enrolment(null, courseId, null);
         EnrolmentEntity entity = mapper.apiToEntity(enrolment);

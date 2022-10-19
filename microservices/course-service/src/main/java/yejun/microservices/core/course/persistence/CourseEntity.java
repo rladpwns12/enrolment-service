@@ -21,6 +21,7 @@ public class CourseEntity {
     @Indexed(unique = true)
     private Long courseId;
 
+    private Integer studentId;
     private int year;
     private Semester semester;
     private Department department;
@@ -34,8 +35,9 @@ public class CourseEntity {
     public CourseEntity() {
     }
 
-    public CourseEntity(Long courseId, int year, Semester semester, Department department, String title, String professorName, int credit, int numberOfStudents, int spare, int capacity) {
+    public CourseEntity(Long courseId,Integer studentId, int year, Semester semester, Department department, String title, String professorName, int credit, int numberOfStudents, int spare, int capacity) {
         this.courseId = courseId;
+        this.studentId = studentId;
         this.year = year;
         this.semester = semester;
         this.department = department;
@@ -74,6 +76,14 @@ public class CourseEntity {
 
     public void setCourseId(Long courseId) {
         this.courseId = courseId;
+    }
+
+    public Integer getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(Integer studentId) {
+        this.studentId = studentId;
     }
 
     public Department getDepartment() {
