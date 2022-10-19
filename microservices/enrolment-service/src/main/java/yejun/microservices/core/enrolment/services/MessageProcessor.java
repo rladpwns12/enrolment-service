@@ -7,6 +7,7 @@ import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Sink;
 import yejun.api.course.Course;
+import yejun.api.enrolment.EnrolmentDTO;
 import yejun.api.enrolment.EnrolmentService;
 import yejun.api.event.Event;
 import yejun.util.exceptions.EventProcessingException;
@@ -38,7 +39,7 @@ public class MessageProcessor {
                 LOG.info("Create {} of enrolments with ID: {}", capacity, courseId);
 
                 for (int i = 0; i < capacity; ++i) {
-                    enrolmentService.createEnrolment(courseId);
+                    enrolmentService.createEnrolment(new EnrolmentDTO(courseId)).block();
                 }
                 break;
 
