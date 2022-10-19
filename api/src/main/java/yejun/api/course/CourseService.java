@@ -97,7 +97,7 @@ public interface CourseService {
             @ApiResponse(code = 422, message = "Unprocessable entity, input parameters caused the processing to fail. See response message for more information.")
     })
     @GetMapping(
-            value = "/courses",
+            value = "/course/courses",
             produces = "application/json")
     Flux<Course> getCourses(
             @RequestHeader HttpHeaders headers,
