@@ -82,7 +82,8 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     }
 
     @Override
-    public Mono<Enrolment> createEnrolment(Long courseId) {
+    public Mono<Enrolment> createEnrolment(EnrolmentDTO enrolmentDTO) {
+        Long courseId = enrolmentDTO.getCourseId();
         if (courseId < 1) throw new InvalidInputException("Invalid courseId: " + courseId);
 
         Enrolment enrolment = new Enrolment(null, courseId, null);
@@ -93,7 +94,11 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                 .onErrorMap(
                         DuplicateKeyException.class,
                         ex -> new InvalidInputException("Duplicate key, Course Id: " + courseId))
-                .map(mapper::entityToApi);
+                .map(mapper::entityToApi)
+                .map(e -> {
+                    e.setServiceAddress(serviceUtil.getServiceAddress());
+                    return e;
+                });
 
         return newEntity;
 
@@ -124,7 +129,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
         Flux<Student> studentFlux = getWebClient().get().uri(url).headers(h -> h.addAll(headers)).retrieve().bodyToFlux(Student.class).log(null, FINE).onErrorResume(error -> empty());
         List<Student> studentList = studentFlux.collectList().block();
         String studentAddress = studentList.get(0).getServiceAddress();
-        ServiceAddresses serviceAddresses = new ServiceAddresses(serviceUtil.getServiceAddress(),null,studentAddress);
+        ServiceAddresses serviceAddresses = new ServiceAddresses(serviceUtil.getServiceAddress(), null, studentAddress);
 
         EnrolmentByCourse enrolmentByCourse = new EnrolmentByCourse(courseId, studentList.stream().map(student -> mapper.studentApiToSummary(student)).collect(Collectors.toList()), serviceAddresses);
 
@@ -271,7 +276,10 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
     private void simulateDelay(int delay) {
         LOG.debug("Sleeping for {} seconds...", delay);
-        try {Thread.sleep(delay * 1000);} catch (InterruptedException e) {}
+        try {
+            Thread.sleep(delay * 1000);
+        } catch (InterruptedException e) {
+        }
         LOG.debug("Moving on...");
     }
 
@@ -286,6 +294,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     }
 
     private final Random randomNumberGenerator = new Random();
+
     private int getRandomNumber(int min, int max) {
 
         if (max < min) {

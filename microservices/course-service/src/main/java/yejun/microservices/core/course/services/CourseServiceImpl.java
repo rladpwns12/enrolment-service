@@ -65,7 +65,7 @@ public class CourseServiceImpl implements CourseService {
     private static final Logger LOG = LoggerFactory.getLogger(CourseServiceImpl.class);
 
     @Autowired
-    public CourseServiceImpl(ServiceUtil serviceUtil, CourseRepository repository, CourseMapper mapper,WebClient.Builder webClientBuilder, MessageSources messageSources) {
+    public CourseServiceImpl(ServiceUtil serviceUtil, CourseRepository repository, CourseMapper mapper, WebClient.Builder webClientBuilder, MessageSources messageSources) {
         this.serviceUtil = serviceUtil;
         this.repository = repository;
         this.mapper = mapper;
@@ -82,14 +82,16 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public Mono<Course> createCourse(Course body) {
 
-        if (body.getCourseId() == null || body.getCourseId() < 1) return Mono.error(new InvalidInputException("Invalid courseId: " + body.getCourseId()));
-        if (body.getStudentId() == null || body.getStudentId() < 1) return Mono.error(new InvalidInputException("Invalid studentId: " + body.getStudentId()));
+        if (body.getCourseId() == null || body.getCourseId() < 1)
+            return Mono.error(new InvalidInputException("Invalid courseId: " + body.getCourseId()));
+        if (body.getStudentId() == null || body.getStudentId() < 1)
+            return Mono.error(new InvalidInputException("Invalid studentId: " + body.getStudentId()));
 
         body.setSpare(body.getCapacity());
         body.setNumberOfStudents(0);
         URI url = UriComponentsBuilder.fromUriString(studentServiceUrl + "/student" + "/" + body.getStudentId()).build().encode().toUri();
         Mono<Student> studentMono = getWebClient().get().uri(url).retrieve().bodyToMono(Student.class).log(null, FINE).onErrorResume(error -> Mono.empty());
-        Student student= studentMono.block();
+        Student student = studentMono.block();
         body.setProfessorName(student.getName());
         CourseEntity entity = mapper.apiToEntity(body);
 
@@ -98,9 +100,9 @@ public class CourseServiceImpl implements CourseService {
                 .onErrorMap(
                         DuplicateKeyException.class,
                         ex -> new InvalidInputException("Duplicate key, Course Id: " + body.getCourseId()))
-                .map(mapper::entityToApi);
+                .map(mapper::entityToApi)
+                .doOnSuccess(e-> messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.CREATE, body.getCourseId(), body)).build()));
 
-        messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.CREATE, body.getCourseId(), body)).build());
 
         return newEntity;
     }
@@ -138,7 +140,10 @@ public class CourseServiceImpl implements CourseService {
         return repository.findAllByCourseIdIn(courseIds)
                 .log(null, FINE)
                 .map(e -> mapper.entityToApi(e))
-                .map(e ->{e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+                .map(e -> {
+                    e.setServiceAddress(serviceUtil.getServiceAddress());
+                    return e;
+                });
     }
 
     @Override
@@ -177,23 +182,32 @@ public class CourseServiceImpl implements CourseService {
 //        return getCoursesByType(courseRequestDTO.getType(), courseRequestDTO.getKeyword(), courseRequestDTO.getYear(), courseRequestDTO.getSemester(), pageable);
     }
 
-    private Flux<Course> getCoursesByType(Type type, String keyword, int year, Semester semester, Pageable pageable){
-        switch (type){
+    private Flux<Course> getCoursesByType(Type type, String keyword, int year, Semester semester, Pageable pageable) {
+        switch (type) {
             case DEPARTMENT:
                 repository.findAllByDepartmentAndYearAndSemester(keyword, year, semester, pageable)
                         .log(null, FINE)
                         .map(mapper::entityToApi)
-                        .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+                        .map(e -> {
+                            e.setServiceAddress(serviceUtil.getServiceAddress());
+                            return e;
+                        });
             case PROFESSOR:
                 repository.findAllByProfessorNameAndYearAndSemester(keyword, year, semester, pageable)
                         .log(null, FINE)
                         .map(mapper::entityToApi)
-                        .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+                        .map(e -> {
+                            e.setServiceAddress(serviceUtil.getServiceAddress());
+                            return e;
+                        });
             case TITLE:
                 repository.findAllByTitleAndYearAndSemester(keyword, year, semester, pageable)
                         .log(null, FINE)
                         .map(mapper::entityToApi)
-                        .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
+                        .map(e -> {
+                            e.setServiceAddress(serviceUtil.getServiceAddress());
+                            return e;
+                        });
             default:
                 throw new InvalidInputException("Invalid Type: " + type);
         }
@@ -250,7 +264,10 @@ public class CourseServiceImpl implements CourseService {
 
     private void simulateDelay(int delay) {
         LOG.debug("Sleeping for {} seconds...", delay);
-        try {Thread.sleep(delay * 1000);} catch (InterruptedException e) {}
+        try {
+            Thread.sleep(delay * 1000);
+        } catch (InterruptedException e) {
+        }
         LOG.debug("Moving on...");
     }
 
@@ -265,6 +282,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private final Random randomNumberGenerator = new Random();
+
     private int getRandomNumber(int min, int max) {
 
         if (max < min) {

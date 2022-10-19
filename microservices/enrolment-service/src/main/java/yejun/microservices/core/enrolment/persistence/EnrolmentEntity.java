@@ -3,14 +3,12 @@ package yejun.microservices.core.enrolment.persistence;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import yejun.api.common.Department;
 
 import static java.lang.String.format;
 
 @Document(collection="enrolments")
-@CompoundIndex(name = "cors-stud-id", sparse = true, unique = true, def = "{'courseId' : 1, 'studentId': 1}")
+//@CompoundIndex(name = "cors-stud-id", sparse = true, unique = true, def = "{'courseId' : 1, 'studentId': 1}")
 public class EnrolmentEntity {
     @Id
     private String id;

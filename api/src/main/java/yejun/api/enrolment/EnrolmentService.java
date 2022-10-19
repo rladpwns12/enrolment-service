@@ -26,8 +26,7 @@ public interface EnrolmentService {
      */
     @ApiOperation(
             value = "${api.enrolment.create-enrolment.description}",
-            notes = "${api.enrolment.create-enrolment.notes}",
-            hidden = true
+            notes = "${api.enrolment.create-enrolment.notes}"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, invalid format of the request. See response message for more information."),
@@ -36,7 +35,7 @@ public interface EnrolmentService {
     @PostMapping(
             value    = "/enrolment",
             consumes = "application/json")
-    Mono<Enrolment> createEnrolment(@RequestBody Long courseId);
+    Mono<Enrolment> createEnrolment(@RequestBody EnrolmentDTO courseId);
 
     /**
      * Sample usage: curl $HOST:$PORT/enrolment/2150685201
