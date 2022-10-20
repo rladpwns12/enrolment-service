@@ -1,5 +1,6 @@
 package yejun.microservices.core.enrolment.services;
 
+import jdk.internal.org.jline.utils.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,121 +139,81 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
     @Override
     public Mono<EnrolmentByStudent> getEnrolmentByStudent(HttpHeaders headers, EnrolmentStudentDTO enrolmentStudentDTO) {
-        EnrolmentByStudent enrolmentByStudent = new EnrolmentByStudent();
-        enrolmentByStudent.setStudentId(enrolmentStudentDTO.getStudentId());
-        CourseSummary courseSummary = new CourseSummary();
-        courseSummary.setCourseId(2150685201L);
-        courseSummary.setCapacity(40);
-        courseSummary.setSpare(15);
-        courseSummary.setNumberOfStudents(25);
-        courseSummary.setProfessorName("김영한");
-        courseSummary.setCredit(3);
-        courseSummary.setDepartment(Department.IT_CONVERGENCE);
-        courseSummary.setSemester(enrolmentStudentDTO.getSemester());
-        courseSummary.setTitle("클라우드융합");
-        courseSummary.setYear(enrolmentStudentDTO.getYear());
+        Integer studentId = enrolmentStudentDTO.getStudentId();
+        if (studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
 
-        CourseSummary course2 = new CourseSummary();
-        course2.setCourseId(65685201L);
-        course2.setCapacity(50);
-        course2.setSpare(1);
-        course2.setNumberOfStudents(49);
-        course2.setProfessorName("Anjolinya Jolyeo");
-        course2.setCredit(4);
-        course2.setDepartment(Department.SCHOOL_OF_BUSINESS_ADMINISTRATION);
-        course2.setSemester(enrolmentStudentDTO.getSemester());
-        course2.setTitle("Zip e ga go ship da");
-        course2.setYear(enrolmentStudentDTO.getYear());
+        LOG.info("Will get Enrolment info for student id={}", studentId);
 
-        List<CourseSummary> courseSummaryList = new ArrayList<>();
-        courseSummaryList.add(courseSummary);
-        courseSummaryList.add(course2);
+        Flux<Enrolment> enrolmentFlux = repository.findAllByStudentId(studentId)
+                .log(null, FINE)
+                .map(e -> mapper.entityToApi(e))
+                .map(e -> {
+                    e.setServiceAddress(serviceUtil.getServiceAddress());
+                    return e;
+                });
+        List<Long> courseIds = enrolmentFlux.toStream().map(Enrolment::getCourseId).collect(Collectors.toList());
 
-        enrolmentByStudent.setCourses(courseSummaryList);
+        URI url = UriComponentsBuilder.fromUriString(courseServiceUrl + "/course").queryParam("courseIds", courseIds).build().encode().toUri();
+
+        LOG.debug("Will call the getCourse API on URL: {}", url);
+
+        Flux<Course> courseFlux = getWebClient().get().uri(url).headers(h -> h.addAll(headers)).retrieve().bodyToFlux(Course.class)
+                .log(null, FINE).onErrorResume(e-> empty());
+        List<Course> courseList = courseFlux.collectList().block();
+        ServiceAddresses serviceAddresses = new ServiceAddresses();
+        if(!courseList.isEmpty()) {
+            String courseAddress = courseList.get(0).getServiceAddress();
+            serviceAddresses = new ServiceAddresses(serviceUtil.getServiceAddress(), courseAddress, null);
+        }
+        List<CourseSummary> collect = courseList.stream().map(course -> mapper.courseApiToSummary(course))
+                .filter(courseSummary -> courseSummary.getYear() == enrolmentStudentDTO.getYear())
+                .filter(courseSummary -> courseSummary.getSemester() == enrolmentStudentDTO.getSemester())
+                .collect(Collectors.toList());
+        EnrolmentByStudent enrolmentByStudent = new EnrolmentByStudent(studentId, collect, serviceAddresses);
+
         return Mono.just(enrolmentByStudent);
-
-//        Integer studentId = enrolmentStudentDTO.getStudentId();
-//        if (studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
-//
-//
-//
-//        LOG.info("Will get Enrolment info for student id={}", studentId);
-//
-//        Flux<Enrolment> enrolmentFlux = repository.findAllByStudentId(studentId)
-//                .log(null, FINE)
-//                .map(e -> mapper.entityToApi(e))
-//                .map(e -> {
-//                    e.setServiceAddress(serviceUtil.getServiceAddress());
-//                    return e;
-//                });
-//        List<Long> courseIds = enrolmentFlux.toStream().map(Enrolment::getCourseId).collect(Collectors.toList());
-//
-//        URI url = UriComponentsBuilder.fromUriString(courseServiceUrl + "/course").queryParam("courseIds", courseIds).build().encode().toUri();
-//
-//        LOG.debug("Will call the getCourse API on URL: {}", url);
-//
-//        Flux<Course> courseFlux = getWebClient().get().uri(url).headers(h -> h.addAll(headers)).retrieve().bodyToFlux(Course.class).log(null, FINE).onErrorResume(error -> empty());
-//        List<Course> courseList = courseFlux.collectList().block();
-//        String courseAddress = courseList.get(0).getServiceAddress();
-//        ServiceAddresses serviceAddresses = new ServiceAddresses(serviceUtil.getServiceAddress(),courseAddress,null);
-//
-//        EnrolmentByStudent enrolmentByStudent = new EnrolmentByStudent(studentId, courseList.stream().map(course -> mapper.courseApiToSummary(course)).collect(Collectors.toList()), serviceAddresses);
-//
-//        return Mono.just(enrolmentByStudent);
     }
 
     @Override
-    public Mono<Course> updateEnrolment(Enrolment body) {
-        Course course1 = new Course();
-        course1.setCourseId(body.getCourseId());
-        course1.setCapacity(40);
-        course1.setSpare(15);
-        course1.setNumberOfStudents(25);
-        course1.setProfessorName("김영한");
-        course1.setCredit(3);
-        course1.setDepartment(Department.IT_CONVERGENCE);
-        course1.setSemester(Semester.FALL);
-        course1.setTitle("클라우드융합");
-        course1.setYear(2022);
+    public Mono<Void> updateEnrolment(Enrolment body) {
+        Integer studentId = body.getStudentId();
+        Long courseId = body.getCourseId();
 
-        return Mono.just(course1);
+        if (studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
 
-//        Integer studentId = body.getStudentId();
-//        Long courseId = body.getCourseId();
-//
-//        if (studentId < 1) throw new InvalidInputException("Invalid studentId: " + studentId);
-//
-//        if (courseId < 1) throw new InvalidInputException("Invalid courseId: " + courseId);
-//
-//        LOG.info("Will Enrolment info for student id={}, course id = {}", studentId, courseId);
-//
-//        if(repository.findByStudentIdAndCourseId(studentId, courseId).hasElement().block())
-//            throw new BadRequestException("Already enrolment course, courseId = " + courseId);
-//
-//        Iterable<EnrolmentEntity> enrolmentEntities = repository.findAllByCourseIdAndStudentIdIsNull(courseId)
-//                .switchIfEmpty(Flux.error(new BadRequestException("It's full of Students for course id = " + courseId)))
-//                .toIterable();
-//        Iterator<EnrolmentEntity> iterator = enrolmentEntities.iterator();
-//        while (iterator.hasNext()){
-//            try {
-//                EnrolmentEntity next = iterator.next();
-//                next.setStudentId(studentId);
-//                repository.save(next).log(null, FINE);
-//
-//                Long numberOfStudents = repository.findAllByCourseIdAndStudentIdIsNotNull(courseId).count().block();
-//                Course update = new Course(courseId, numberOfStudents == null ? null : numberOfStudents.intValue());
-//                messageSources.outputCourses().send(MessageBuilder.withPayload(new Event<>(Event.Type.UPDATE, update.getCourseId(), update)).build());
-//
-//                URI url = UriComponentsBuilder.fromUriString(courseServiceUrl + "/course/{courseId}").build(courseId);
-//                LOG.debug("Will call the getCourse API on URL: {}", url);
-//                Mono<Course> course = getWebClient().get().uri(url).retrieve().bodyToMono(Course.class).log(null, FINE).onErrorResume(error -> Mono.empty());
-//                return course;
-//
-//            }catch (OptimisticLockingFailureException o){
-//                LOG.info("enrolment fail try again... student id = {}, course id = {}", studentId, courseId);
-//            }
-//        }
-//        throw new BadRequestException("It's full of Students for course id = " + courseId);
+        if (courseId < 1) throw new InvalidInputException("Invalid courseId: " + courseId);
+
+        LOG.info("Will Enrolment info for student id={}, course id = {}", studentId, courseId);
+
+        if (repository.findByStudentIdAndCourseId(studentId, courseId).hasElement().block())
+            throw new BadRequestException("Already enrolment course, courseId = " + courseId);
+
+        Iterable<EnrolmentEntity> enrolmentEntities = repository.findAllByCourseIdAndStudentIdIsNull(courseId)
+                .switchIfEmpty(Flux.error(new BadRequestException("It's full of Students for course id = " + courseId)))
+                .toIterable();
+        Iterator<EnrolmentEntity> iterator = enrolmentEntities.iterator();
+        while (iterator.hasNext()) {
+            try {
+                EnrolmentEntity next = iterator.next();
+                next.setStudentId(studentId);
+                repository.save(next).subscribe();
+            } catch (OptimisticLockingFailureException o) {
+                LOG.info("enrolment fail try again... student id = {}, course id = {}", studentId, courseId);
+                continue;
+            }
+            Course update = new Course(courseId);
+            messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.UPDATE, update.getCourseId(), update)).build());
+            return Mono.empty();
+        }
+        throw new BadRequestException("It's full of Students for course id = " + courseId);
+    }
+
+    public void updateCourseSpare(Course course) {
+        Long courseId = course.getCourseId();
+        Long numberOfStudents = repository.findAllByCourseIdAndStudentIdIsNotNull(courseId).count().block();
+        LOG.info(" courseId : {} about numberOfStudents is {}...",courseId, numberOfStudents);
+        course.setNumberOfStudents(numberOfStudents == null ? null : numberOfStudents.intValue());
+        messageSources.outputCourses().send(MessageBuilder.withPayload(new Event<>(Event.Type.UPDATE, course.getCourseId(), course)).build());
     }
 
     @Override

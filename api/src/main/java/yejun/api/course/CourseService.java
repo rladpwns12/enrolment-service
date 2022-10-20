@@ -69,8 +69,7 @@ public interface CourseService {
      */
     @ApiOperation(
             value = "${api.course.get-course.description}",
-            notes = "${api.course.get-course.notes}",
-            hidden = true
+            notes = "${api.course.get-course.notes}"
     )
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, invalid format of the request. See response message for more information."),
@@ -80,7 +79,7 @@ public interface CourseService {
     @GetMapping(
             value = "/course",
             produces = "application/json")
-    Flux<Course> getCourse(List<Long> courseIds);
+    Flux<Course> getCourse(@RequestParam List<Long> courseIds);
 
     /**
      * Sample usage: curl -X GET $HOST:$PORT/courses?type=PROFESSOR&keyword=김영한&year=2021&semester=FALL&page=0&size=20

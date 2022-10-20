@@ -39,12 +39,16 @@ public class MessageProcessor {
                 LOG.info("Create {} of enrolments with ID: {}", capacity, courseId);
 
                 for (int i = 0; i < capacity; ++i) {
-                    enrolmentService.createEnrolment(new EnrolmentDTO(courseId)).block();
+                    enrolmentService.createEnrolment(new EnrolmentDTO(courseId)).subscribe();
                 }
                 break;
 
+            case UPDATE:
+                LOG.info("Update about course with ID: {}", event.getKey());
+                enrolmentService.updateCourseSpare(event.getData());
+                break;
             default:
-                String errorMessage = "Incorrect event type: " + event.getEventType() + ", expected a CREATE event";
+                String errorMessage = "Incorrect event type: " + event.getEventType();
                 LOG.warn(errorMessage);
                 throw new EventProcessingException(errorMessage);
         }
