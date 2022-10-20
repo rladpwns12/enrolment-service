@@ -209,11 +209,10 @@ public class CourseServiceImpl implements CourseService {
         Long courseId = body.getCourseId();
 
         if (courseId < 1) throw new InvalidInputException("Invalid courseId: " + courseId);
-
+        LOG.info("courseId : {}, numberOfStudents : {}", body.getCourseId(), body.getNumberOfStudents());
         repository.findByCourseId(courseId)
                 .switchIfEmpty(error(new NotFoundException("No course found for courseId: " + courseId)))
-                .map(e -> repository.save(mapper.updateEntityByEnrolment(body, e)));
-        return;
+                .map(e -> repository.save(mapper.updateEntityByEnrolment(body, e))).flatMap(e->e).block();
     }
 
     @Override

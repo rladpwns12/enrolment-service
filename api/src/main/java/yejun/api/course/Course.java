@@ -5,17 +5,14 @@ import io.swagger.annotations.ApiModelProperty;
 import yejun.api.common.Department;
 import yejun.api.common.Semester;
 
-public class Course {
+public class  Course {
     private Long courseId;
     private Integer studentId;
     private Department department;
     private String title;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String professorName;
     private Integer credit;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer numberOfStudents;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer spare;
     private Integer capacity;
     private Integer year;
@@ -59,6 +56,11 @@ public class Course {
         this.courseId = courseId;
         this.numberOfStudents = numberOfStudents;
     }
+
+    public Course(Long courseId) {
+        this.courseId = courseId;
+    }
+
     public Long getCourseId() {
         return courseId;
     }

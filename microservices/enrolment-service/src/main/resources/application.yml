@@ -94,6 +94,10 @@ spring.cloud.stream:
       destination: courses
       producer:
         required-groups: auditGroup
+    output-enrolments:
+      destination: enrolments
+      producer:
+        required-groups: auditGroup
 
 spring.cloud.stream.bindings.input.consumer:
   maxAttempts: 3

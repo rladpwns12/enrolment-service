@@ -103,7 +103,7 @@ public interface EnrolmentService {
     @PutMapping(
             value    = "/enrolment",
             consumes = "application/json")
-    Mono<Course> updateEnrolment(@RequestBody Enrolment body);
+    Mono<Void> updateEnrolment(@RequestBody Enrolment body);
 
     /**
      * Sample usage:
@@ -129,4 +129,6 @@ public interface EnrolmentService {
     @GetMapping("/enrolment/api")
     @ApiIgnore
     void api(HttpServletResponse response) throws IOException;
+    @ApiIgnore
+    public void updateCourseSpare(Course course);
 }

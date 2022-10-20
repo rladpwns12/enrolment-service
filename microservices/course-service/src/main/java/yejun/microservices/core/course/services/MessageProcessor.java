@@ -33,7 +33,7 @@ public class MessageProcessor {
 
         case UPDATE:
             Course course = event.getData();
-            Long courseId = course.getCourseId();
+            Long courseId = event.getKey();
 
             LOG.info("Update course by enrolment with ID: {}", courseId);
 
