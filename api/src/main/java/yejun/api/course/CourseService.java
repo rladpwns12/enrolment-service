@@ -69,7 +69,8 @@ public interface CourseService {
      */
     @ApiOperation(
             value = "${api.course.get-course.description}",
-            notes = "${api.course.get-course.notes}"
+            notes = "${api.course.get-course.notes}",
+            hidden = true
     )
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, invalid format of the request. See response message for more information."),

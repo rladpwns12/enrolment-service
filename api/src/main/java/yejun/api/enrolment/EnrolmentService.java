@@ -26,7 +26,8 @@ public interface EnrolmentService {
      */
     @ApiOperation(
             value = "${api.enrolment.create-enrolment.description}",
-            notes = "${api.enrolment.create-enrolment.notes}"
+            notes = "${api.enrolment.create-enrolment.notes}",
+            hidden = true
     )
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, invalid format of the request. See response message for more information."),
