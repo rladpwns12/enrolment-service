@@ -122,6 +122,31 @@ spring.rabbitmq:
   username: guest
   password: guest
 
+app.product-service.timeoutSec: 2
+
+resilience4j.retry:
+  backends:
+    enrolment:
+      maxRetryAttempts: 3
+      waitDuration: 1000
+      retryExceptions:
+        - yejun.util.exceptions.BadRequestException
+      ignore-exceptions:
+        - org.springframework.dao.OptimisticLockingFailureException
+
+resilience4j.circuitbreaker:
+  backends:
+    getCourseAboutEnrolment:
+      registerHealthIndicator: true # actuator를 통해 circuitbraker 상태를 확인하기 위해 설정
+      ringBufferSizeInClosedState: 10
+      failureRateThreshold: 50 # 마지막 5개 호출중 3개 이상 실패시 서킷 오픈
+      waitDurationInOpenState: 10000 # 서킷이 반열림으로 변경되기 전 유지 하는 시간 (ms)
+      ringBufferSizeInHalfOpenState: 5 # 서킷이 반열림 상태로 전환된 후 처음 유입된 3개의 호출을 기준 삼아 서킷의 열림 여부 결정
+      automaticTransitionFromOpenToHalfOpenEnabled: true # 반 열림 상태로 전환
+      ignoreExceptions:
+        - yejun.util.exceptions.InvalidInputException
+        - yejun.util.exceptions.NotFoundException
+
 logging:
   level:
     root: INFO

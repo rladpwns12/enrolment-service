@@ -1,19 +1,26 @@
 package yejun.microservices.core.enrolment.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import jdk.internal.org.jline.utils.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.integration.handler.advice.RequestHandlerCircuitBreakerAdvice;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -29,11 +36,14 @@ import yejun.microservices.core.enrolment.persistence.EnrolmentEntity;
 import yejun.microservices.core.enrolment.persistence.EnrolmentRepository;
 import yejun.util.exceptions.BadRequestException;
 import yejun.util.exceptions.InvalidInputException;
+import yejun.util.exceptions.NotFoundException;
+import yejun.util.http.HttpErrorInfo;
 import yejun.util.http.ServiceUtil;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +60,8 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EnrolmentServiceImpl.class);
 
+    private final int productServiceTimeoutSec;
+
     private final String studentServiceUrl = "http://student";
 
     private final String courseServiceUrl = "http://course";
@@ -60,6 +72,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
     private final EnrolmentMapper mapper;
 
+    private final ObjectMapper objectMapper;
     private final WebClient.Builder webClientBuilder;
 
     private final MessageSources messageSources;
@@ -68,12 +81,14 @@ public class EnrolmentServiceImpl implements EnrolmentService {
 
 
     @Autowired
-    public EnrolmentServiceImpl(ServiceUtil serviceUtil, EnrolmentRepository repository, EnrolmentMapper mapper, WebClient.Builder webClientBuilder, MessageSources messageSources) {
+    public EnrolmentServiceImpl(ServiceUtil serviceUtil, EnrolmentRepository repository, EnrolmentMapper mapper, WebClient.Builder webClientBuilder, MessageSources messageSources, @Value("#{new Integer('${app.product-service.timeoutSec}')}") int productServiceTimeoutSec, ObjectMapper objectMapper) {
         this.serviceUtil = serviceUtil;
         this.repository = repository;
         this.mapper = mapper;
         this.webClientBuilder = webClientBuilder;
         this.messageSources = messageSources;
+        this.productServiceTimeoutSec = productServiceTimeoutSec;
+        this.objectMapper = objectMapper;
     }
 
     public WebClient getWebClient() {
@@ -151,17 +166,25 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                     e.setServiceAddress(serviceUtil.getServiceAddress());
                     return e;
                 });
+
         List<Long> courseIds = enrolmentFlux.toStream().map(Enrolment::getCourseId).collect(Collectors.toList());
+        return Mono.zip(value -> createEnrolmentByStudent((List<Course>) value[0], enrolmentStudentDTO),
+                        getCourseAboutEnrolment(headers, courseIds).collectList())
+                                .onErrorReturn(CallNotPermittedException.class,
+                                        getEnrolmentByStudentFallbackValue(headers, enrolmentStudentDTO))
+                .doOnError(ex -> LOG.warn("getEnrolmentByStudent failed: {}", ex.toString()))
+                .log(null, FINE);
 
-        URI url = UriComponentsBuilder.fromUriString(courseServiceUrl + "/course").queryParam("courseIds", courseIds).build().encode().toUri();
+    }
 
-        LOG.debug("Will call the getCourse API on URL: {}", url);
+    private EnrolmentByStudent getEnrolmentByStudentFallbackValue(HttpHeaders headers, EnrolmentStudentDTO enrolmentStudentDTO) {
+        LOG.info("getEnrolmentByStudentFallbackValue!!.. about : {}", enrolmentStudentDTO.getStudentId());
+        return new EnrolmentByStudent(enrolmentStudentDTO.getStudentId(), null, null);
+    }
 
-        Flux<Course> courseFlux = getWebClient().get().uri(url).headers(h -> h.addAll(headers)).retrieve().bodyToFlux(Course.class)
-                .log(null, FINE).onErrorResume(e-> empty());
-        List<Course> courseList = courseFlux.collectList().block();
+    private EnrolmentByStudent createEnrolmentByStudent(List<Course> courseList, EnrolmentStudentDTO enrolmentStudentDTO) {
         ServiceAddresses serviceAddresses = new ServiceAddresses();
-        if(!courseList.isEmpty()) {
+        if (!courseList.isEmpty()) {
             String courseAddress = courseList.get(0).getServiceAddress();
             serviceAddresses = new ServiceAddresses(serviceUtil.getServiceAddress(), courseAddress, null);
         }
@@ -169,12 +192,21 @@ public class EnrolmentServiceImpl implements EnrolmentService {
                 .filter(courseSummary -> courseSummary.getYear() == enrolmentStudentDTO.getYear())
                 .filter(courseSummary -> courseSummary.getSemester() == enrolmentStudentDTO.getSemester())
                 .collect(Collectors.toList());
-        EnrolmentByStudent enrolmentByStudent = new EnrolmentByStudent(studentId, collect, serviceAddresses);
+        return new EnrolmentByStudent(enrolmentStudentDTO.getStudentId(), collect, serviceAddresses);
+    }
 
-        return Mono.just(enrolmentByStudent);
+    @CircuitBreaker(name = "getCourseAboutEnrolment")
+    public Flux<Course> getCourseAboutEnrolment(HttpHeaders headers, List<Long> courseIds) {
+        URI url = UriComponentsBuilder.fromUriString(courseServiceUrl + "/course").queryParam("courseIds", courseIds).build().encode().toUri();
+        LOG.debug("Will call the getCourse API on URL: {}", url);
+        return getWebClient().get().uri(url).headers(h -> h.addAll(headers)).retrieve().bodyToFlux(Course.class)
+                .log(null, FINE)
+                .onErrorMap(WebClientResponseException.class, e -> handleException(e))
+                .timeout(Duration.ofSeconds(productServiceTimeoutSec));
     }
 
     @Override
+    @Retry(name = "enrolment")
     public Mono<Void> updateEnrolment(Enrolment body) {
         Integer studentId = body.getStudentId();
         Long courseId = body.getCourseId();
@@ -196,14 +228,14 @@ public class EnrolmentServiceImpl implements EnrolmentService {
             try {
                 EnrolmentEntity next = iterator.next();
                 next.setStudentId(studentId);
-                repository.save(next).subscribe();
+                return repository.save(next).doOnSuccess(enrolmentEntity -> {
+                    Course update = new Course(courseId);
+                    messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.UPDATE, update.getCourseId(), update)).build());
+                }).timeout(Duration.ofSeconds(productServiceTimeoutSec)).then();
             } catch (OptimisticLockingFailureException o) {
                 LOG.info("enrolment fail try again... student id = {}, course id = {}", studentId, courseId);
                 continue;
             }
-            Course update = new Course(courseId);
-            messageSources.outputEnrolments().send(MessageBuilder.withPayload(new Event<>(Event.Type.UPDATE, update.getCourseId(), update)).build());
-            return Mono.empty();
         }
         throw new BadRequestException("It's full of Students for course id = " + courseId);
     }
@@ -211,7 +243,7 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     public void updateCourseSpare(Course course) {
         Long courseId = course.getCourseId();
         Long numberOfStudents = repository.findAllByCourseIdAndStudentIdIsNotNull(courseId).count().block();
-        LOG.info(" courseId : {} about numberOfStudents is {}...",courseId, numberOfStudents);
+        LOG.info(" courseId : {} about numberOfStudents is {}...", courseId, numberOfStudents);
         course.setNumberOfStudents(numberOfStudents == null ? null : numberOfStudents.intValue());
         messageSources.outputCourses().send(MessageBuilder.withPayload(new Event<>(Event.Type.UPDATE, course.getCourseId(), course)).build());
     }
@@ -269,5 +301,37 @@ public class EnrolmentServiceImpl implements EnrolmentService {
     public void api(HttpServletResponse response) throws IOException {
         String redirect_uri = "/swagger-ui/index.html";
         response.sendRedirect(redirect_uri);
+    }
+
+    private Throwable handleException(Throwable ex) {
+
+        if (!(ex instanceof WebClientResponseException)) {
+            LOG.warn("Got a unexpected error: {}, will rethrow it", ex.toString());
+            return ex;
+        }
+
+        WebClientResponseException wcre = (WebClientResponseException) ex;
+
+        switch (wcre.getStatusCode()) {
+
+            case NOT_FOUND:
+                return new NotFoundException(getErrorMessage(wcre));
+
+            case UNPROCESSABLE_ENTITY:
+                return new InvalidInputException(getErrorMessage(wcre));
+
+            default:
+                LOG.warn("Got a unexpected HTTP error: {}, will rethrow it", wcre.getStatusCode());
+                LOG.warn("Error body: {}", wcre.getResponseBodyAsString());
+                return ex;
+        }
+    }
+
+    private String getErrorMessage(WebClientResponseException ex) {
+        try {
+            return objectMapper.readValue(ex.getResponseBodyAsString(), HttpErrorInfo.class).getMessage();
+        } catch (IOException ioex) {
+            return ex.getMessage();
+        }
     }
 }
