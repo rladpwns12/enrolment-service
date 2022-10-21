@@ -5,6 +5,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface EnrolmentRepository extends ReactiveCrudRepository<EnrolmentEntity, String> {
+    Mono<EnrolmentEntity> findDistinctFirstByCourseIdAndStudentIdIsNotNull(Long courseId);
     Mono<EnrolmentEntity> findByStudentIdAndCourseId(Integer studentId, Long courseId);
     Flux<EnrolmentEntity> findAllByCourseIdAndStudentIdIsNull(Long courseId);
     Flux<EnrolmentEntity> findAllByCourseIdAndStudentIdIsNotNull(Long courseId);
