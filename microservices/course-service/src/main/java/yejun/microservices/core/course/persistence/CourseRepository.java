@@ -12,6 +12,8 @@ import java.util.List;
 
 public interface CourseRepository extends ReactiveCrudRepository<CourseEntity, String> {
     Mono<CourseEntity> findByCourseId(Long courseId);
+
+    Flux<CourseEntity> findAllByStudentId(Long studentId);
     Flux<CourseEntity> findAllByDepartmentAndYearAndSemester(String keyword, int year, Semester semester, Pageable pageable);
     Flux<CourseEntity> findAllByTitleContainingAndYearAndSemester(String keyword, int year, Semester semester, Pageable pageable);
     Flux<CourseEntity> findAllByProfessorNameAndYearAndSemester(String keyword, int year, Semester semester, Pageable pageable);

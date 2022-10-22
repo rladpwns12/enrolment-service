@@ -145,6 +145,23 @@ public class CourseServiceImpl implements CourseService {
         return getCoursesByType(courseRequestDTO.getType(), courseRequestDTO.getKeyword(), courseRequestDTO.getYear(), courseRequestDTO.getSemester(), pageable);
     }
 
+    @Override
+    public Flux<Course> getCourseByProfessor(HttpHeaders headers, Long professorId) {
+        if (professorId == null || professorId < 1)
+            return Flux.error(new InvalidInputException("Invalid professorId: " + professorId));
+
+        LOG.info("Will get course info for professorId={}", professorId);
+
+        return repository.findAllByStudentId(professorId)
+                .switchIfEmpty(error(new NotFoundException("No Course found for professorId: " + professorId)))
+                .log(null, FINE)
+                .map(mapper::entityToApi)
+                .map(e -> {
+                    e.setServiceAddress(serviceUtil.getServiceAddress());
+                    return e;
+                });
+    }
+
     private Flux<Course> getCoursesByType(Type type, String keyword, int year, Semester semester, Pageable pageable) {
         switch (type) {
             case DEPARTMENT:

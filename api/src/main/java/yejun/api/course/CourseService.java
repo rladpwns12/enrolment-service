@@ -104,6 +104,14 @@ public interface CourseService {
             CourseRequestDTO courseRequestDTO
     );
 
+    @GetMapping(
+            value = "/course/professor/{professorId}",
+            produces = "application/json")
+    Flux<Course> getCourseByProfessor(
+            @RequestHeader HttpHeaders headers,
+            @PathVariable Long professorId
+    );
+
     /**
      * Sample usage:
      * <p>
