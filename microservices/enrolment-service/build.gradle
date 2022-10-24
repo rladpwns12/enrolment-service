@@ -43,7 +43,6 @@ dependencies {
 	implementation('org.springframework.cloud:spring-cloud-starter-sleuth')
 	implementation('org.springframework.cloud:spring-cloud-starter-zipkin')
 	implementation('org.springframework.retry:spring-retry')
-	implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
 	implementation('io.springfox:springfox-boot-starter:3.0.0')
 	implementation("org.mapstruct:mapstruct:${mapstructVersion}")
 	implementation("io.github.resilience4j:resilience4j-spring-boot2:${resilience4jVersion}")

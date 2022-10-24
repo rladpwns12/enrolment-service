@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: course
+spec:
+  selector:
+    matchLabels:
+      app: course
+  template:
+    metadata:
+      labels:
+        app: course
+    spec:
+      containers:
+        - name: pro
+          image: allclegiwon/course-service:v1
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker,prod"
+          resources:
+            requests:
+              memory: "200Mi"
+            limits:
+              memory: "400Mi"
