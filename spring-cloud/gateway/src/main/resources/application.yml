@@ -55,6 +55,9 @@ spring.cloud.gateway.routes:
   predicates:
   - Path=/eureka/**
 
+spring.zipkin.sender.type: rabbit
+spring.sleuth.sampler.probability: 1.0
+
 management.endpoint.health.show-details: "ALWAYS"
 management.endpoints.web.exposure.include: "*"
 
@@ -68,3 +71,11 @@ logging:
 spring.profiles: docker
 
 app.eureka-server: eureka
+
+---
+spring.profiles: kafka
+
+management.health.rabbit.enabled: false
+spring.cloud.stream.defaultBinder: kafka
+spring.zipkin.sender.type: kafka
+spring.kafka.bootstrap-servers: kafka:9092
