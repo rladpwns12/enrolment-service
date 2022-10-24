@@ -123,6 +123,9 @@ spring.rabbitmq:
   username: guest
   password: guest
 
+spring.zipkin.sender.type: rabbit
+spring.sleuth.sampler.probability: 1.0
+
 logging:
   level:
     root: INFO
@@ -143,3 +146,12 @@ eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
 spring.rabbitmq.host: rabbitmq
 
 spring.cloud.stream.kafka.binder.brokers: kafka
+
+---
+spring.profiles: kafka
+
+management.health.rabbit.enabled: false
+spring.cloud.stream.defaultBinder: kafka
+spring.zipkin.sender.type: kafka
+spring.kafka.bootstrap-servers: kafka:9092
+
