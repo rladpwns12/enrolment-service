@@ -52,8 +52,6 @@ services:
   mongodb:
     image: mongo:3.6.9
     mem_limit: 350m
-    networks:
-      - my-network
     ports:
       - "27017:27017"
     command: mongod --smallfiles
@@ -66,8 +64,6 @@ services:
   rabbitmq:
     image: rabbitmq:3.7.8-management
     mem_limit: 350m
-    networks:
-      - my-network
     ports:
       - 5672:5672
       - 15672:15672
@@ -80,8 +76,6 @@ services:
   zipkin:
     image: openzipkin/zipkin:2.12.9
     mem_limit: 512m
-    networks:
-      - my-network
     environment:
       - STORAGE_TYPE=mem
       - RABBIT_ADDRESSES=rabbitmq
@@ -91,6 +85,3 @@ services:
       rabbitmq:
         condition: service_healthy
 
-networks:
-  my-network:
-    name: my-network
