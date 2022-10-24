@@ -43,8 +43,6 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
     build: spring-cloud/gateway
     mem_limit: 350m
-    networks:
-      - my-network
     ports:
       - "8080:8080"
 
