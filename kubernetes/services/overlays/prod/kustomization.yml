@@ -1,7 +1,6 @@
 bases:
   - ../../base
 patchesStrategicMerge:
-- gateway-prod.yml
 - enrolment-prod.yml
 - student-prod.yml
 - course-prod.yml

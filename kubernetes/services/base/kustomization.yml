@@ -1,6 +1,6 @@
 resources:
-- gateway.yml
 - enrolment.yml
 - student.yml
 - course.yml
 - zipkin-server.yml
+- ingress-edge-server.yml

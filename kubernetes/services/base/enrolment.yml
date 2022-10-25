@@ -19,6 +19,13 @@ spec:
         env:
           - name: SPRING_PROFILES_ACTIVE
             value: "docker"
+          - name: SPRING_CONFIG_LOCATION
+              value: file:/config-repo/application.yml,file:/config-repo/enrolment.yml
+        envFrom:
+          - secretRef:
+              name: rabbitmq-credentials
+          - secretRef:
+              name: mongodb-credentials
         ports:
         - containerPort: 80
         resources:
@@ -44,6 +51,13 @@ spec:
           timeoutSeconds: 2
           failureThreshold: 3
           successThreshold: 1
+        volumeMounts:
+          - name: config-repo-volume
+            mountPath: /config-repo
+      volumes:
+        - name: config-repo-volume
+          configMap:
+            name: config-repo-enrolment
 ---
 apiVersion: v1
 kind: Service

@@ -56,8 +56,6 @@ api:
 server.port: 7002
 server.error.include-message: always
 
-spring.application.name: enrolment
-
 spring.data.mongodb:
   host: localhost
   port: 27017
@@ -71,7 +69,14 @@ spring.cloud.stream:
       destination: courses
       producer:
         required-groups: auditGroup
-
+    output-students:
+      destination: students
+      producer:
+        required-groups: auditGroup
+    output-enrolments:
+      destination: enrolments
+      producer:
+        required-groups: auditGroup
     input:
       destination: enrolments
       group: enrolmentsGroup
@@ -89,29 +94,29 @@ spring.cloud.stream.rabbit.bindings.input.consumer:
 spring.cloud.stream.kafka.bindings.input.consumer:
   enableDlq: true
 
-spring.security.oauth2.resourceserver.jwt.jwk-set-uri: http://${app.auth-server}/.well-known/jwks.json
 
-app.product-service.timeoutSec: 2
-
-resilience4j.retry:
-  backends:
-    product:
-      maxRetryAttempts: 3
-      waitDuration: 1000
-      retryExceptions:
-        - org.springframework.web.reactive.function.client.WebClientResponseException$InternalServerError
 
 management.health.circuitbreakers.enabled: true
 
+resilience4j.retry:
+  backends:
+    enrolment:
+      maxRetryAttempts: 3
+      waitDuration: 1000
+      retryExceptions:
+        - yejun.util.exceptions.BadRequestException
+      ignore-exceptions:
+        - org.springframework.dao.OptimisticLockingFailureException
+
 resilience4j.circuitbreaker:
   backends:
-    product:
-      registerHealthIndicator: true
-      ringBufferSizeInClosedState: 5
-      failureRateThreshold: 50
-      waitDurationInOpenState: 10000
-      ringBufferSizeInHalfOpenState: 3
-      automaticTransitionFromOpenToHalfOpenEnabled: true
+    getCourseAboutEnrolment:
+      registerHealthIndicator: true # actuator를 통해 circuitbraker 상태를 확인하기 위해 설정
+      ringBufferSizeInClosedState: 10
+      failureRateThreshold: 50 # 마지막 5개 호출중 3개 이상 실패시 서킷 오픈
+      waitDurationInOpenState: 10000 # 서킷이 반열림으로 변경되기 전 유지 하는 시간 (ms)
+      ringBufferSizeInHalfOpenState: 5 # 서킷이 반열림 상태로 전환된 후 처음 유입된 3개의 호출을 기준 삼아 서킷의 열림 여부 결정
+      automaticTransitionFromOpenToHalfOpenEnabled: true # 반 열림 상태로 전환
       ignoreExceptions:
         - yejun.util.exceptions.InvalidInputException
         - yejun.util.exceptions.NotFoundException
@@ -119,7 +124,7 @@ resilience4j.circuitbreaker:
 logging:
   level:
     root: INFO
-    se.magnus: DEBUG
+    yejun: DEBUG
     org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 
@@ -130,6 +135,7 @@ server.port: 80
 
 spring.data.mongodb.host: mongodb
 
+spring.rabbitmq.host: rabbitmq
 ---
 spring.profiles: streaming_partitioned
 
@@ -141,6 +147,13 @@ spring.cloud.stream.bindings.output-courses.producer:
   partition-key-expression: payload.key
   partition-count: 2
 
+spring.cloud.stream.bindings.output-students.producer:
+  partition-key-expression: payload.key
+  partition-count: 2
+
+spring.cloud.stream.bindings.output-enrolments.producer:
+  partition-key-expression: payload.key
+  partition-count: 2
 ---
 
 spring.profiles: streaming_instance_0
@@ -159,7 +172,7 @@ spring.data.mongodb.host: 172.17.0.1
 logging:
   level:
     root: WARN
-    se.magnus: WARN
+    yejun: WARN
     org.springframework.web.server.adapter.HttpWebHandlerAdapter: WARN
     org.springframework.data.mongodb.core.MongoTemplate: WARN
 
