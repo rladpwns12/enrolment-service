@@ -53,8 +53,6 @@ api:
 server.port: 7003
 server.error.include-message: always
 
-spring.application.name: course
-
 spring.data.mongodb:
   host: localhost
   port: 27017
@@ -63,15 +61,18 @@ spring.data.mongodb:
 spring.cloud.stream:
   defaultBinder: rabbit
   default.contentType: application/json
+  bindings.input:
+    destination: courses
+    group: coursesgroup
   bindings:
+    output-students:
+      destination: students
+      producer:
+        required-groups: auditGroup
     output-enrolments:
       destination: enrolments
       producer:
         required-groups: auditGroup
-
-    input:
-      destination: courses
-      group: coursesGroup
 
 spring.cloud.stream.bindings.input.consumer:
   maxAttempts: 3
@@ -86,37 +87,12 @@ spring.cloud.stream.rabbit.bindings.input.consumer:
 spring.cloud.stream.kafka.bindings.input.consumer:
   enableDlq: true
 
-spring.security.oauth2.resourceserver.jwt.jwk-set-uri: http://${app.auth-server}/.well-known/jwks.json
-
-app.product-service.timeoutSec: 2
-
-resilience4j.retry:
-  backends:
-    product:
-      maxRetryAttempts: 3
-      waitDuration: 1000
-      retryExceptions:
-        - org.springframework.web.reactive.function.client.WebClientResponseException$InternalServerError
-
 management.health.circuitbreakers.enabled: true
-
-resilience4j.circuitbreaker:
-  backends:
-    product:
-      registerHealthIndicator: true
-      ringBufferSizeInClosedState: 5
-      failureRateThreshold: 50
-      waitDurationInOpenState: 10000
-      ringBufferSizeInHalfOpenState: 3
-      automaticTransitionFromOpenToHalfOpenEnabled: true
-      ignoreExceptions:
-        - yejun.util.exceptions.InvalidInputException
-        - yejun.util.exceptions.NotFoundException
 
 logging:
   level:
     root: INFO
-    se.magnus: DEBUG
+    yejun: DEBUG
     org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 
@@ -127,6 +103,7 @@ server.port: 80
 
 spring.data.mongodb.host: mongodb
 
+spring.rabbitmq.host: rabbitmq
 ---
 spring.profiles: streaming_partitioned
 
@@ -138,6 +115,9 @@ spring.cloud.stream.bindings.output-enrolments.producer:
   partition-key-expression: payload.key
   partition-count: 2
 
+spring.cloud.stream.bindings.output-students.producer:
+  partition-key-expression: payload.key
+  partition-count: 2
 ---
 
 spring.profiles: streaming_instance_0
@@ -156,7 +136,7 @@ spring.data.mongodb.host: 172.17.0.1
 logging:
   level:
     root: WARN
-    se.magnus: WARN
+    yejun: WARN
     org.springframework.web.server.adapter.HttpWebHandlerAdapter: WARN
     org.springframework.data.mongodb.core.MongoTemplate: WARN
 

@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: edge
+spec:
+  tls:
+    - hosts:
+        - minikube.me
+      secretName: tls-certificate
+  rules:
+    - host: minikube.me
+      http:
+        paths:
+          - path: /enrolment
+            backend:
+              serviceName: enrolment
+              servicePort: 80
+          - path: /course
+              backend:
+                serviceName: course
+                servicePort: 80
+          - path: /student
+              backend:
+                serviceName: student
+                servicePort: 80
+          - path: /actuator/health
+            backend:
+              serviceName: enrolment
+              servicePort: 80
