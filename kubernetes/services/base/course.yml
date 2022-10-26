@@ -20,7 +20,7 @@ spec:
           - name: SPRING_PROFILES_ACTIVE
             value: "docker"
           - name: SPRING_CONFIG_LOCATION
-              value: file:/config-repo/application.yml,file:/config-repo/course.yml
+            value: file:/config-repo/application.yml,file:/config-repo/course.yml
         envFrom:
           - secretRef:
               name: rabbitmq-credentials

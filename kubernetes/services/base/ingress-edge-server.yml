@@ -1,29 +1,36 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: edge
 spec:
-  tls:
-    - hosts:
-        - minikube.me
-      secretName: tls-certificate
   rules:
-    - host: minikube.me
-      http:
+    - http:
         paths:
           - path: /enrolment
+            pathType: Prefix
             backend:
-              serviceName: enrolment
-              servicePort: 80
+              service:
+                name: enrolment
+                port:
+                  number: 80
           - path: /course
-              backend:
-                serviceName: course
-                servicePort: 80
-          - path: /student
-              backend:
-                serviceName: student
-                servicePort: 80
-          - path: /actuator/health
+            pathType: Prefix
             backend:
-              serviceName: enrolment
-              servicePort: 80
+              service:
+                name: course
+                port:
+                  number: 80
+          - path: /student
+            pathType: Prefix
+            backend:
+              service:
+                name: student
+                port:
+                  number: 80
+          - path: /actuator/health
+            pathType: Prefix
+            backend:
+              service:
+                name: enrolment
+                port:
+                  number: 80

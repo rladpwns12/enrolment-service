@@ -9,6 +9,14 @@ services:
       - my-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/student.yml
+      - SPRING_RABBITMQ_USERNAME=${RABBITMQ_USR}
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PWD}
+      - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
+      - SPRING_DATA_MONGODB_USERNAME=${MONGODB_USR}
+      - SPRING_DATA_MONGODB_PASSWORD=${MONGODB_PWD}
+    volumes:
+      - $PWD/config-repo:/config-repo
     depends_on:
       mongodb:
         condition: service_healthy
@@ -23,6 +31,14 @@ services:
       - my-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/course.yml
+      - SPRING_RABBITMQ_USERNAME=${RABBITMQ_USR}
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PWD}
+      - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
+      - SPRING_DATA_MONGODB_USERNAME=${MONGODB_USR}
+      - SPRING_DATA_MONGODB_PASSWORD=${MONGODB_PWD}
+    volumes:
+      - $PWD/config-repo:/config-repo
     depends_on:
       mongodb:
         condition: service_healthy
@@ -37,6 +53,14 @@ services:
       - my-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/enrolment.yml
+      - SPRING_RABBITMQ_USERNAME=${RABBITMQ_USR}
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PWD}
+      - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
+      - SPRING_DATA_MONGODB_USERNAME=${MONGODB_USR}
+      - SPRING_DATA_MONGODB_PASSWORD=${MONGODB_PWD}
+    volumes:
+      - $PWD/config-repo:/config-repo
     depends_on:
       mongodb:
         condition: service_healthy
@@ -46,6 +70,12 @@ services:
   gateway:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/gateway.yml
+      - SERVER_SSL_KEY_STORE_PASSWORD=${GATEWAY_TLS_PWD}
+      - SPRING_RABBITMQ_USERNAME=${RABBITMQ_USR}
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PWD}
+    volumes:
+      - $PWD/config-repo:/config-repo
     build: spring-cloud/gateway
     networks:
       - my-network
@@ -53,6 +83,7 @@ services:
     mem_limit: 350m
     ports:
       - "8080:8080"
+
 
   # $ mongo
   mongodb:
@@ -63,6 +94,9 @@ services:
     ports:
       - "27017:27017"
     command: mongod --smallfiles
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USR}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PWD}
     healthcheck:
       test: "mongo --eval 'db.stats().ok'"
       interval: 20s
@@ -77,6 +111,9 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USR}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PWD}
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
       interval: 20s
@@ -91,6 +128,8 @@ services:
     environment:
       - STORAGE_TYPE=mem
       - RABBIT_ADDRESSES=rabbitmq
+      - RABBIT_USER=${RABBITMQ_USR}
+      - RABBIT_PASSWORD=${RABBITMQ_PWD}
     ports:
       - 9411:9411
     depends_on:
