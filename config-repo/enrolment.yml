@@ -7,43 +7,37 @@ api:
       termsOfServiceUrl: terms of url
       license: all rights reserved yejun kim
       licenseUrl: https://github.com/rladpwns12
-
       contact:
         name: yejun kim
         url: https://github.com/rladpwns12
         email: rladpwns12@gmail.com
-
     create-enrolment:
       description: Creates a enrolment
       notes: |
         # Normal response
         enrolment information of the specified course will save
-
         # Expected error responses
         1. If enrolment records with same 'course id' are greater than number of students that specified course,
         an <b>422 - Unprocessable Entity</b> error
         with a "No more records can be created" error message will be returned
-
     get-enrolment:
-      description: Returns a enrolment information of the specified search option
-      1. If student id is null and course id is not null then find enrolment information by course id
-      2. If student id is not null and course id is null then find enrolment information by student id
-      3. if student id and course id are null then return null page
+      description: |
+        Returns a enrolment information of the specified search option
+        1. If student id is null and course id is not null then find enrolment information by course id
+        2. If student id is not null and course id is null then find enrolment information by student id
+        3. if student id and course id are null then return null page
       notes: |
         # Normal response
         If the requested search option is found the method will return enrolment information
-
     update-student:
       description: enrolment
       notes: |
         # Normal response
         request of student id will be registered for the course you are taking and return course information that you are taking.
-
         # Expected error responses
         1. If a enrolment with the same student id as specified in the posted information already exists,
           an <b>422 - Unprocessable Entity</b> error with a "You've already signed up for the course" error message will be returned
         2. If it's full of students, an <b>422 - Unprocessable Entity</b> error with a "It's full of students" error message will be returned
-
     delete-enrolment:
       description: Deletes a enrolment
       notes: |
@@ -51,7 +45,6 @@ api:
         Entities for enrolment information related to the specificed studentId and courseId will be deleted.
         The implementation of the delete method is idempotent, i.e. it can be called several times with the same response.
         This means that a delete request of a non existing enrolment will return <b>200 Ok</b>.
-
 
 server.port: 7002
 server.error.include-message: always
@@ -133,9 +126,6 @@ spring.profiles: docker
 
 server.port: 80
 
-spring.data.mongodb.host: mongodb
-
-spring.rabbitmq.host: rabbitmq
 ---
 spring.profiles: streaming_partitioned
 

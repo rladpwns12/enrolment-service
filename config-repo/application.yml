@@ -18,6 +18,8 @@ spring.profiles: docker
 
 spring.rabbitmq.host: rabbitmq
 
+spring.data.mongodb.host: mongodb
+
 spring.cloud.stream.kafka.binder.brokers: kafka
 
 
