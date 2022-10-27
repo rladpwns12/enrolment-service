@@ -87,6 +87,7 @@ spring.cloud.stream.rabbit.bindings.input.consumer:
 spring.cloud.stream.kafka.bindings.input.consumer:
   enableDlq: true
 
+app.product-service.timeoutSec: 2
 
 
 management.health.circuitbreakers.enabled: true

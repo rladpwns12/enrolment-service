@@ -6,6 +6,7 @@ spring.cloud.stream.kafka.binder:
   brokers: 127.0.0.1
   defaultBrokerPort: 9092
 
+
 spring.zipkin.sender.type: rabbit
 spring.sleuth.sampler.probability: 1.0
 
