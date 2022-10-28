@@ -1,0 +1,138 @@
+api:
+  course:
+    common:
+      version: 1.0.0
+      title: Course API
+      description: RESTful API course
+      termsOfServiceUrl: terms of url
+      license: all rights reserved yejun kim
+      licenseUrl: https://github.com/rladpwns12
+      contact:
+        name: yejun kim
+        url: https://github.com/rladpwns12
+        email: rladpwns12@gmail.com
+    create-course:
+      description: Creates a course
+      notes: |
+        # Normal response
+        course information will save
+    get-course:
+      description: Returns a course information of the specified course id
+      notes: |
+        # Normal response
+        If the requested course id is found the method will return course information
+        # Expected partial and error responses
+        If no course information is found, a <b>404 - Not Found</b> error will be returned
+    get-courses:
+      description: Returns page of course information of the specified search option
+      notes: |
+        # Normal response
+        Returns page of course information that matches the requested search options
+        If no corresponding course exists, a null page will be returned.
+    update-course:
+      description: Update a course
+      notes: |
+        # Normal response
+        course information will update
+    delete-course:
+      description: Deletes a course
+      notes: |
+        # Normal response
+        Entities for course information related to the specificed courseId will be deleted.
+        The implementation of the delete method is idempotent, i.e. it can be called several times with the same response.
+        This means that a delete request of a non existing course will return <b>200 Ok</b>.
+
+server.port: 7003
+server.error.include-message: always
+
+spring.data.mongodb:
+  host: localhost
+  port: 27017
+  database: course-db
+
+spring.cloud.stream:
+  defaultBinder: rabbit
+  default.contentType: application/json
+  bindings.input:
+    destination: courses
+    group: coursesgroup
+  bindings:
+    output-students:
+      destination: students
+      producer:
+        required-groups: auditGroup
+    output-enrolments:
+      destination: enrolments
+      producer:
+        required-groups: auditGroup
+
+spring.cloud.stream.bindings.input.consumer:
+  maxAttempts: 3
+  backOffInitialInterval: 500
+  backOffMaxInterval: 1000
+  backOffMultiplier: 2.0
+
+spring.cloud.stream.rabbit.bindings.input.consumer:
+  autoBindDlq: true
+  republishToDlq: true
+
+spring.cloud.stream.kafka.bindings.input.consumer:
+  enableDlq: true
+
+management.health.circuitbreakers.enabled: true
+
+logging:
+  level:
+    root: INFO
+    yejun: DEBUG
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+
+---
+spring.profiles: docker
+
+server.port: 80
+
+---
+spring.profiles: streaming_partitioned
+
+spring.cloud.stream.bindings.input.consumer:
+  partitioned: true
+  instanceCount: 2
+
+spring.cloud.stream.bindings.output-enrolments.producer:
+  partition-key-expression: payload.key
+  partition-count: 2
+
+spring.cloud.stream.bindings.output-students.producer:
+  partition-key-expression: payload.key
+  partition-count: 2
+---
+
+spring.profiles: streaming_instance_0
+spring.cloud.stream.bindings.input.consumer.instanceIndex: 0
+
+---
+spring.profiles: streaming_instance_1
+spring.cloud.stream.bindings.input.consumer.instanceIndex: 1
+
+---
+
+spring.profiles: prod
+
+spring.data.mongodb.host: 172.17.0.1
+
+logging:
+  level:
+    root: WARN
+    yejun: WARN
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: WARN
+    org.springframework.data.mongodb.core.MongoTemplate: WARN
+
+
+
+
+
+
+
+

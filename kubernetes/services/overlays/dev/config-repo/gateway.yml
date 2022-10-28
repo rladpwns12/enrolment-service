@@ -1,0 +1,47 @@
+server.port: 8443
+
+server.ssl:
+  key-store-type: PKCS12
+  key-store: classpath:keystore/edge.p12
+  key-alias: localhost
+
+spring.cloud.gateway.routes:
+
+- id: enrolment
+  uri: http://enrolment
+  predicates:
+  - Path=/enrolment/**
+  #        filters:
+  #        - TokenRelay=
+
+- id: student
+  uri: http://student
+  predicates:
+    - Path=/student/**
+  #        filters:
+  #        - TokenRelay=
+
+- id: course
+  uri: http://course
+  predicates:
+    - Path=/course/**
+  #        filters:
+  #        - TokenRelay=
+
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: INFO
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
+
+---
+spring.profiles: prod
+
+logging:
+  level:
+    root: WARN
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: WARN
+    org.springframework.cloud.gateway: WARN
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: WARN

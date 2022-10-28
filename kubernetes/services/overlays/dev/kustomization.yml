@@ -9,17 +9,17 @@ configMapGenerator:
   - name: config-repo-student
     behavior: create
     files:
-      - ../../../../config-repo/application.yml
-      - ../../../../config-repo/student.yml
+      - config-repo/application.yml
+      - config-repo/student.yml
   - name: config-repo-course
     behavior: create
     files:
-      - ../../../../config-repo/application.yml
-      - ../../../../config-repo/course.yml
+      - config-repo/application.yml
+      - config-repo/course.yml
   - name: config-repo-enrolment
     behavior: create
     files:
-      - ../../../../config-repo/application.yml
-      - ../../../../config-repo/enrolment.yml
+      - config-repo/application.yml
+      - config-repo/enrolment.yml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
