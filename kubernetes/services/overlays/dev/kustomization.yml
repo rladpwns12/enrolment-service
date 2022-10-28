@@ -7,17 +7,17 @@ commonLabels:
   env: dev
 configMapGenerator:
   - name: config-repo-student
-    behavior: create
+    behavior: replace
     files:
       - config-repo/application.yml
       - config-repo/student.yml
   - name: config-repo-course
-    behavior: create
+    behavior: replace
     files:
       - config-repo/application.yml
       - config-repo/course.yml
   - name: config-repo-enrolment
-    behavior: create
+    behavior: replace
     files:
       - config-repo/application.yml
       - config-repo/enrolment.yml
