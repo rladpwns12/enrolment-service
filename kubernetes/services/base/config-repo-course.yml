@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-repo-course
+  labels:
+    env: dev
+    name: config-repo-course

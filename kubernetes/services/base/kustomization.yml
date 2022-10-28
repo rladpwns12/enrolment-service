@@ -5,5 +5,7 @@ resources:
 - zipkin-server.yml
 - ingress-edge-server.yml
 - config-repo-student.yml
+- config-repo-course.yml
+- config-repo-enrolment.yml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
