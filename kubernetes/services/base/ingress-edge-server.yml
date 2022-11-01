@@ -38,3 +38,11 @@ spec:
                 name: enrolment
                 port:
                   number: 80
+          - path: /zipkin
+            pathType: Prefix
+            backend:
+              service:
+                name: zipkin-server
+                port:
+                  number: 9411
+
