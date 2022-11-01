@@ -44,5 +44,5 @@ spec:
               service:
                 name: zipkin-server
                 port:
-                  number: 9411
+                  number: 80
 

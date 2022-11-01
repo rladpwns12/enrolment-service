@@ -55,3 +55,4 @@ spec:
     app: zipkin-server
   ports:
     - port: 9411
+      targetPort: 80
