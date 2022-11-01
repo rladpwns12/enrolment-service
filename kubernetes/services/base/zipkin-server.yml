@@ -54,5 +54,5 @@ spec:
   selector:
     app: zipkin-server
   ports:
-    - port: 9411
+    - port: 80
       targetPort: 9411
